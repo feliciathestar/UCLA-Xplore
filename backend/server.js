@@ -6,7 +6,10 @@ const { getEmbedding, searchSimilarities } = require('./embeddingModel');
 const app = express();
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb://localhost:27017/timeslots', { useNewUrlParser: true, useUnifiedTopology: true });
+const cors = require('cors');
+app.use(cors());
+
+mongoose.connect('mongodb://localhost:27017/timeslots');
 
 const TimeSlotSchema = new mongoose.Schema({
   date: String,
