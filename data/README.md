@@ -1,5 +1,6 @@
 # Setting Up PostgreSQL
 
+
 ## Description
 Follow this guide to set up postgres locally and populate local tables with sample events from UCLA Winter Week7.
 
@@ -18,13 +19,13 @@ Make sure you have the following installed on your local machine:
 
 2. Start a PostgreSQL session by running:
 ```
-    $ psql -U <your_username> -d <your_database>
+$ psql -U <your_username> -d <your_database>
 ```
 
 ## Create the events & timeslotsTable
 Run the following SQL command to create the events table:
      
-    ```
+```
 psql=#  CREATE TABLE events (
             event_id SERIAL PRIMARY KEY,
             event_name VARCHAR(255) NOT NULL,
@@ -34,8 +35,8 @@ psql=#  CREATE TABLE events (
             start_time TIME WITHOUT TIME ZONE NOT NULL,
             end_time TIME WITHOUT TIME ZONE NOT NULL
             );
-
-    ```
+```
+```
 psql=#  CREATE TABLE timeslots (
             slot_id SERIAL PRIMARY KEY,
             event_id JSONB NOT NULL,
@@ -50,24 +51,24 @@ psql=#  CREATE TABLE timeslots (
 
 After running the SQL commands, confirm the tables exist by running:
 
-    ```
+```
 psql=# \dt
 ```
 You should see events and timeslots listed.
 
 To check their structure, run:
 
-    ```
+```
 psql=# \d events
-    ```
+```
+```
 psql=# \d timeslots
 ```
 
 ## Populate Timeslots Table
 
 1. Insert all time slots (30 mins interval) between date 2025-02-17 and 2025-02-25
-
-    ```
+```
 psql=#  INSERT INTO timeslots (date, start_time, end_time)
             SELECT 
                 d.date,
@@ -82,14 +83,14 @@ psql=#  INSERT INTO timeslots (date, start_time, end_time)
             ) d
             CROSS JOIN generate_series(1, 48) n;
 ```
-2. Check the First Few Rows
 
-    ```
+2. Check the First Few Rows
+```
 psql=# SELECT * FROM timeslots LIMIT 10;
 ```
-3. Check the Total Number of Inserted Rows
 
-    ```
+3. Check the Total Number of Inserted Rows
+```
 psql=# SELECT COUNT(*) FROM timeslots;
 ```
 
@@ -98,12 +99,12 @@ psql=# SELECT COUNT(*) FROM timeslots;
 Run insert_events.py (/Users/wanxinxiao/Desktop/UCLA-Xplore/data/scripts/insert_events.py) to transfer all rows in the excel sheet to events table.
 Remeber to install the required package:
 ```
-    $ pip3 install psycopg2
+$ pip3 install psycopg2
 ```
 
 ## Linking event_id's to time slots in Timeslots Table
 
-    ```
+```
 psql=#  UPDATE timeslots ts
             SET ts.event_id = COALESCE(ts.event_id, '[]'::JSONB) || to_jsonb(e.event_id)
             FROM events e
@@ -116,7 +117,7 @@ psql=#  UPDATE timeslots ts
 
 Query all event_ids for your selected time slots:
 
-    ```
+```
 psql=#  SELECT DISTINCT jsonb_array_elements(event_id) AS event_id
             FROM timeslots
             WHERE date = '2025-02-18'
