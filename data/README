@@ -1,16 +1,16 @@
-# Setting Up PostgreSQL
+# [Setting Up PostgreSQL]
 
-## Description
+## [Description]
 Follow this guide to set up postgres locally and populate local tables with sample events from UCLA Winter Week7.
 
-## Download PostgreSQL
+## [Download PostgreSQL]
 
 Make sure you have the following installed on your local machine:
 
 - PostgreSQL (Ensure psql is accessible from the terminal), https://www.postgresql.org/download/
 - A database on PostgreSQL created to store the tables
 
-## Connect to PostgreSQL
+## [Connect to PostgreSQL]
 1. Open a terminal or command prompt.
 
 2. Start a PostgreSQL session by running:
@@ -18,7 +18,7 @@ Make sure you have the following installed on your local machine:
     $ psql -U <your_username> -d <your_database>
 
 
-## Create the events & timeslotsTable
+## [Create the events & timeslotsTable]
 Run the following SQL command to create the events table:
      
     psql=#  CREATE TABLE events (
@@ -40,7 +40,7 @@ Run the following SQL command to create the events table:
             CONSTRAINT timeslots_event_id_fkey FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
             );
 
-## Verify Table Creation
+## [Verify Table Creation]
 
 After running the SQL commands, confirm the tables exist by running:
 
@@ -53,7 +53,7 @@ To check their structure, run:
     psql=# \d events
     psql=# \d timeslots
 
-## Populate Timeslots Table
+## [Populate Timeslots Table]
 
 1. Insert all time slots (30 mins interval) between date 2025-02-17 and 2025-02-25
 
@@ -80,13 +80,13 @@ To check their structure, run:
     psql=# SELECT COUNT(*) FROM timeslots;
 
 
-## Insert Sample Data into Events Table
+## [Insert Sample Data into Events Table]
 
 Run insert_events.py (/Users/wanxinxiao/Desktop/UCLA-Xplore/data/scripts/insert_events.py) to transfer all rows in the excel sheet to events table.
 Remeber to install the required package:
     $ pip3 install psycopg2
 
-## Linking event_id's to time slots in Timeslots Table
+## [Linking event_id's to time slots in Timeslots Table]
 
     psql=#  UPDATE timeslots ts
             SET ts.event_id = COALESCE(ts.event_id, '[]'::JSONB) || to_jsonb(e.event_id)
@@ -95,7 +95,7 @@ Remeber to install the required package:
             AND ts.start_time >= e.start_time 
             AND ts.start_time < e.end_time;
 
-## Querying Tables
+## [Querying Tables]
 
 Query all event_ids for your selected time slots:
 
