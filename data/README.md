@@ -38,7 +38,7 @@ psql=# CREATE TABLE events (
 ```
 psql=# CREATE TABLE timeslots (
        slot_id SERIAL PRIMARY KEY,
-       event_id JSONB NOT NULL,
+       event_id JSONB,
        date DATE NOT NULL,
        start_time TIME WITHOUT TIME ZONE NOT NULL,
        end_time TIME WITHOUT TIME ZONE NOT NULL
