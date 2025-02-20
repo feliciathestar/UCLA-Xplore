@@ -41,7 +41,7 @@ psql=# CREATE TABLE timeslots (
        event_id JSONB NOT NULL,
        date DATE NOT NULL,
        start_time TIME WITHOUT TIME ZONE NOT NULL,
-       end_time TIME WITHOUT TIME ZONE NOT NULL,
+       end_time TIME WITHOUT TIME ZONE NOT NULL
        );
 ```         
             
