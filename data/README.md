@@ -42,7 +42,6 @@ psql=# CREATE TABLE timeslots (
        date DATE NOT NULL,
        start_time TIME WITHOUT TIME ZONE NOT NULL,
        end_time TIME WITHOUT TIME ZONE NOT NULL,
-       CONSTRAINT timeslots_event_id_fkey FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
        );
 ```         
             
