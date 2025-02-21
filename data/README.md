@@ -104,7 +104,7 @@ $ pip3 install psycopg2
 
 ```
 psql=# UPDATE timeslots ts
-       SET ts.event_id = COALESCE(ts.event_id, '[]'::JSONB) || to_jsonb(e.event_id)
+       SET event_id = COALESCE(ts.event_id, '[]'::JSONB) || to_jsonb(e.event_id)
        FROM events e
        WHERE ts.date = e.date
        AND ts.start_time >= e.start_time 
