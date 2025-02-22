@@ -2,8 +2,8 @@ from pymilvus import connections
 from pymilvus import (FieldSchema, DataType, CollectionSchema, Collection)
 import numpy as np
 
-ENDPOINT = "https://in03-eefdb16c307075e.serverless.gcp-us-west1.cloud.zilliz.com"
-TOKEN = "b56edf694754f8b54b5bdb6901f368827d48b221f39cc9351dba662bdf30df33e404d16154b276feb201e73bae56dad37d0991a5"
+ENDPOINT = "https://in03-360d7a6acbd9660.serverless.gcp-us-west1.cloud.zilliz.com"
+TOKEN = "0655b3db6ad52e4419627358025db8c966d6de3929cf4894e14fcc54cc5d16252ec0ce468937a2f478cb9c09a5932dfdee73e180"
 connections.connect(uri=ENDPOINT, token=TOKEN)
 
 # Creating a test collection
