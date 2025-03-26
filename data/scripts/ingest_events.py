@@ -5,7 +5,7 @@ import re
 from datetime import datetime, date, timedelta
 
 # assign data to be processed (a week in a quarter)
-file_path= "raw/events_calendar/w07.txt"
+file_path= "raw/events_calendar/w08.txt"
 
 def convert_time(time_str, all_day, is_start_time=False):
     """Convert time to PostgreSQL format
@@ -28,9 +28,9 @@ def convert_time(time_str, all_day, is_start_time=False):
     except (ValueError, TypeError):
         return time_str
 
-def parse_w07(file_path):
+def parse_raw_txt(file_path):
     with open(file_path, "r", encoding="utf-8") as file:
-        w07_content = file.readlines()
+        raw_content = file.readlines()
     
     events = []
     current_event = None
@@ -49,7 +49,7 @@ def parse_w07(file_path):
         "event_location": None,
     }
     
-    for i, line in enumerate(w07_content):
+    for i, line in enumerate(raw_content):
         line = line.strip()
         
         # Check if the line is a new event
@@ -123,12 +123,12 @@ def parse_w07(file_path):
         
         if start_line != -1:
             location_line = start_line + 4
-            if location_line < len(w07_content):
-                event["event_location"] = w07_content[location_line].strip()
+            if location_line < len(raw_content):
+                event["event_location"] = raw_content[location_line].strip()
             
             description_line = start_line + 6
-            if description_line < len(w07_content):
-                event["event_description"] = w07_content[description_line].strip()
+            if description_line < len(raw_content):
+                event["event_description"] = raw_content[description_line].strip()
     
     # Convert DataFrame and normalize formats
     df = pd.DataFrame(events)
@@ -146,7 +146,7 @@ def parse_w07(file_path):
     return df
 
 def classify_and_save_w07(path_to_raw, path_example_columns, output_path):
-    events_df = parse_w07(path_to_raw)
+    events_df = parse_raw_txt(path_to_raw)
     
     book1_xl = pd.ExcelFile(path_example_columns)
     sheet_name = book1_xl.sheet_names[0]
