@@ -14,6 +14,10 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 
+# milvus connection
+from pymilvus import connections, Collection
+import openai
+
 # Other imports
 from datetime import datetime, timezone, timedelta
 from typing import Optional
@@ -21,6 +25,18 @@ from typing import Optional
 
 # Initialize FastAPI app
 app = FastAPI()
+
+# Add Milvus connection constants
+MILVUS_ENDPOINT = "https://in03-360d7a6acbd9660.serverless.gcp-us-west1.cloud.zilliz.com"
+MILVUS_TOKEN = "0655b3db6ad52e4419627358025db8c966d6de3929cf4894e14fcc54cc5d16252ec0ce468937a2f478cb9c09a5932dfdee73e180"
+MILVUS_COLLECTION_NAME = "ucla_club_events"
+
+# Add OpenAI constants
+OPENAI_API_KEY = "your-openai-api-key"  # Replace with your actual key
+EMBEDDING_MODEL = "text-embedding-ada-002"
+
+# Initialize OpenAI and Milvus connections
+openai.api_key = OPENAI_API_KEY
 
 # CORS middleware to allow cross-origin requests
 app.add_middleware(
@@ -45,8 +61,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 # In-memory "database" for demo purposes
 fake_users_db = {}
 
-
+#####################################
 ### Define data validation models ###
+#####################################
 # converting an object into a format like JSON or XML that can be stored or transmitted over a network.
 class User(BaseModel):
     # Internal user representation with secure password storage
@@ -73,8 +90,9 @@ class ChatResponse(BaseModel):
     # Outgoing response to user
     response: str
 
-
+#########################
 ### Utility functions ###
+#########################
 def verify_password(plain_password, hashed_password):
     """
     Verify a password against a hashed password.
@@ -152,8 +170,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user
 
 
-
+##################
 ### API routes ###
+##################
 
 # Register endpoint 
 @app.post("/auth/register", response_model=Token)
@@ -177,7 +196,6 @@ async def register(user: UserIn):
 
     return {"access_token": access_token, "token_type": "bearer"}
 
-
 # Login endpoint
 @app.post("/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -196,8 +214,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+##########################
+### Postgres Functions ###
+##########################
 
-# functions for data pipeline
 def query_postgres(message: str):
     """
     Query PostgreSQL database based on user message.
@@ -206,16 +226,16 @@ def query_postgres(message: str):
         message: User query string that will be parsed for event criteria
         
     Returns:
-        String with formatted event data or error message
+        String of comma-separated event IDs matching the criteria
     """
     try:
         load_dotenv()
 
         # Extract query parameters from message (this is simplified)
-        # In a real implementation, you'd use NLP or parsing to extract date/time info
-        date = '2025-02-19'  # Default date for demo purposes
-        start_time = '12:00:00'  # Default start time
-        end_time = '18:00:00'  # Default end time
+        # Below are pre-defined sample input data. In a real implementation, you'd use NLP or parsing to extract date/time info
+        date = '2025-02-19'  
+        start_time = '12:00:00' 
+        end_time = '18:00:00' 
 
         # Connect to PostgreSQL database
         conn = psycopg2.connect(
@@ -236,27 +256,79 @@ def query_postgres(message: str):
         cur.execute(query, (date, start_time, end_time))
         matching_events = cur.fetchall()
         
-        # Format results
-        result = f"Found {len(matching_events)} events for {date} between {start_time} and {end_time}\n"
-        
+        # Format results as concatenated event IDs
+        event_ids = []
         for event in matching_events:
-            # Adjust unpacking based on your actual database schema
-            event_id, name, description, location, date, start, end = event
-            result += f"Event: {name}, Location: {location}, Start: {start}, End: {end}\n"
+            # Extract just the event_id (first element in each tuple)
+            event_id = event[0]
+            event_ids.append(str(event_id))
         
         cur.close()
         conn.close()
         
-        return result
+        return event_ids
         
     except psycopg2.Error as e:
         return f"Database error: {e}"
     except Exception as e:
         return f"Error processing query: {e}"
 
-def query_milvus(data: str):
-    # Replace this with your actual Milvus query logic
-    return f"Semantic vector for data: {data}"
+
+########################
+### Milvus functions ###
+########################
+
+def initialize_milvus():
+    connections.connect(uri=MILVUS_ENDPOINT, token=MILVUS_TOKEN)
+    collection = Collection(MILVUS_COLLECTION_NAME)
+    collection.load()
+    return collection
+
+def query_milvus_by_single_id(event_id):
+    """
+    Query Milvus database by one exact event ID
+    
+    Args:
+        event_id: The ID of the event to retrieve
+        
+    Returns:
+        Dictionary with event details or error message
+    """
+    try:
+        collection = initialize_milvus()
+        expr = f"event_id == {event_id}"
+        results = collection.query(
+            expr,
+            output_fields=["event_name", "event_tags", "event_programe", "event_location", "event_description"]
+        )
+        return results
+    except Exception as e:
+        return f"Milvus query error: {e}"
+
+def query_milvus_by_list_ids(event_ids: list):
+    """
+    Query Milvus database by multiple event IDs as a list
+    
+    Args:
+        event_ids: List of event IDs to retrieve
+        
+    Returns:
+        Dictionary with event details or error message
+    """
+    try:
+        collection = initialize_milvus()
+        
+        # Convert list to comma-separated string for Milvus query
+        ids_str = ",".join(str(id) for id in event_ids)
+        expr = f"event_id in [{ids_str}]"
+        
+        results = collection.query(
+            expr,
+            output_fields=["event_name", "event_tags", "event_programe", "event_location", "event_description"]
+        )
+        return results
+    except Exception as e:
+        return f"Milvus query error: {e}"
 
 def generate_llm_response(milvus_result: str):
     # Replace this with your LLM integration logic
@@ -268,8 +340,8 @@ def generate_llm_response(milvus_result: str):
 @app.post("/chat", response_model=ChatResponse)
 async def chat(chat_request: ChatRequest, current_user: User = Depends(get_current_user)):
     # Pipeline: Postgres -> Milvus -> LLM
-    postgres_data = query_postgres(chat_request.message)
-    milvus_result = query_milvus(postgres_data)
+    event_ids = query_postgres(chat_request.message)
+    milvus_result = query_milvus_by_list_ids(event_ids)
     llm_response = generate_llm_response(milvus_result)
     return {"response": llm_response}
 
