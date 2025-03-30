@@ -1,14 +1,28 @@
+# FastAPI 
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+# authentication and authorization
 import jwt
 from passlib.context import CryptContext
-from datetime import datetime, timezone, timedelta
-from typing import Optional
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+# database connection
+import psycopg2
+import os
+from dotenv import load_dotenv
+
+# Other imports
+from datetime import datetime, timezone, timedelta
+from typing import Optional
+
+
+# Initialize FastAPI app
 app = FastAPI()
 
+# CORS middleware to allow cross-origin requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows requests from any domain
@@ -183,10 +197,62 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 
-# Dummy functions to simulate your pipeline
+# functions for data pipeline
 def query_postgres(message: str):
-    # Replace this with your actual PostgreSQL query
-    return f"Data from PostgreSQL for '{message}'"
+    """
+    Query PostgreSQL database based on user message.
+    
+    Args:
+        message: User query string that will be parsed for event criteria
+        
+    Returns:
+        String with formatted event data or error message
+    """
+    try:
+        load_dotenv()
+
+        # Extract query parameters from message (this is simplified)
+        # In a real implementation, you'd use NLP or parsing to extract date/time info
+        date = '2025-02-19'  # Default date for demo purposes
+        start_time = '12:00:00'  # Default start time
+        end_time = '18:00:00'  # Default end time
+
+        # Connect to PostgreSQL database
+        conn = psycopg2.connect(
+            dbname="xploredb",
+            user="postgres", 
+            password=os.getenv('DB_PASSWORD'),
+            host="localhost"
+        )
+        cur = conn.cursor()
+
+        # Updated query to find events based on date AND time range
+        query = """
+        SELECT * FROM events 
+        WHERE date = %s 
+        AND start_time >= %s 
+        AND end_time <= %s;
+        """
+        cur.execute(query, (date, start_time, end_time))
+        matching_events = cur.fetchall()
+        
+        # Format results
+        result = f"Found {len(matching_events)} events for {date} between {start_time} and {end_time}\n"
+        
+        for event in matching_events:
+            # Adjust unpacking based on your actual database schema
+            event_id, name, description, location, date, start, end = event
+            result += f"Event: {name}, Location: {location}, Start: {start}, End: {end}\n"
+        
+        cur.close()
+        conn.close()
+        
+        return result
+        
+    except psycopg2.Error as e:
+        return f"Database error: {e}"
+    except Exception as e:
+        return f"Error processing query: {e}"
 
 def query_milvus(data: str):
     # Replace this with your actual Milvus query logic
