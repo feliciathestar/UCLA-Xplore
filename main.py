@@ -330,6 +330,51 @@ def query_milvus_by_list_ids(event_ids: list):
     except Exception as e:
         return f"Milvus query error: {e}"
 
+def query_milvus_by_vector_similarity(query_text, top_k=5):
+    """
+    Query Milvus database using semantic similarity search
+    
+    Args:
+        query_text: The text to search for
+        top_k: Number of top results to return
+        
+    Returns:
+        List of semantically similar events
+    """
+    try:
+        collection = initialize_milvus()
+        query_embedding = get_openai_embedding(query_text)
+        
+        if not query_embedding:
+            return "Failed to generate embedding for search"
+        
+        search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
+        results = collection.search(
+            data=[query_embedding],
+            anns_field="embedding",
+            param=search_params,
+            limit=top_k,
+            output_fields=["event_id", "event_name", "event_tags", "event_programe", "event_location", "event_description"]
+        )
+
+        # Format the results
+        formatted_results = []
+        for hits in results:
+            for hit in hits:
+                formatted_results.append({
+                    "id": hit.entity.get("event_id"),
+                    "name": hit.entity.get("event_name"),
+                    "tags": hit.entity.get("event_tags"),
+                    "program": hit.entity.get("event_programe"),
+                    "location": hit.entity.get("event_location"),
+                    "description": hit.entity.get("event_description"),
+                    "similarity": hit.distance
+                })
+        
+        return formatted_results
+    except Exception as e:
+        return f"Milvus search error: {e}"
+
 def generate_llm_response(milvus_result: str):
     # Replace this with your LLM integration logic
     return f"Concise response based on {milvus_result}"
