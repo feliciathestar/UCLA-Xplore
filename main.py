@@ -25,18 +25,18 @@ from typing import Optional
 
 # Initialize FastAPI app
 app = FastAPI()
+load_dotenv()
 
-# Add Milvus connection constants
-MILVUS_ENDPOINT = "https://in03-360d7a6acbd9660.serverless.gcp-us-west1.cloud.zilliz.com"
-MILVUS_TOKEN = "0655b3db6ad52e4419627358025db8c966d6de3929cf4894e14fcc54cc5d16252ec0ce468937a2f478cb9c09a5932dfdee73e180"
-MILVUS_COLLECTION_NAME = "ucla_club_events"
+# Milvus connection constants
+MILVUS_ENDPOINT = os.getenv("MILVUS_ENDPOINT")
+MILVUS_TOKEN = os.getenv("MILVUS_TOKEN")
+MILVUS_COLLECTION_NAME = os.getenv("MILVUS_COLLECTION_NAME")
 
-# Add OpenAI constants
-OPENAI_API_KEY = "your-openai-api-key"  # Replace with your actual key
-EMBEDDING_MODEL = "text-embedding-ada-002"
+# OpenAI constants
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Initialize OpenAI and Milvus connections
-openai.api_key = OPENAI_API_KEY
+# JWT configuration
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
 # CORS middleware to allow cross-origin requests
 app.add_middleware(
