@@ -223,7 +223,7 @@ def query_postgres(message: str):
     Query PostgreSQL database based on user message.
     
     Args:
-        message: User query string that will be parsed for event criteria
+        message: User query string that will be parsed for date/time info
         
     Returns:
         String of comma-separated event IDs matching the criteria
@@ -333,6 +333,7 @@ def query_milvus_by_list_ids(event_ids: list):
 def query_milvus_by_vector_similarity(query_text, top_k=5):
     """
     Query Milvus database using semantic similarity search
+    Used for when there is no event ID to search for (e.g., no time contraints)
     
     Args:
         query_text: The text to search for
@@ -376,14 +377,23 @@ def query_milvus_by_vector_similarity(query_text, top_k=5):
         return f"Milvus search error: {e}"
 
 def generate_llm_response(milvus_result: str):
-    # Replace this with your LLM integration logic
+    # the input field also needs an extra 
     return f"Concise response based on {milvus_result}"
 
 
 
-# Chat endpoint – requires authentication
+# # Chat endpoint – requires authentication
+# @app.post("/chat", response_model=ChatResponse)
+# async def chat(chat_request: ChatRequest, current_user: User = Depends(get_current_user)):
+#     # Pipeline: Postgres -> Milvus -> LLM
+#     event_ids = query_postgres(chat_request.message)
+#     milvus_result = query_milvus_by_list_ids(event_ids)
+#     llm_response = generate_llm_response(milvus_result)
+#     return {"response": llm_response}
+
+# Chat endpoint – temporarily bypasses authentication
 @app.post("/chat", response_model=ChatResponse)
-async def chat(chat_request: ChatRequest, current_user: User = Depends(get_current_user)):
+async def chat(chat_request: ChatRequest):
     # Pipeline: Postgres -> Milvus -> LLM
     event_ids = query_postgres(chat_request.message)
     milvus_result = query_milvus_by_list_ids(event_ids)

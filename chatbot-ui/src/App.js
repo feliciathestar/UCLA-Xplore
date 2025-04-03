@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider, AuthContext } from "./AuthContext";
 import Login from "./Login";
 import Chat from "./Chat";
+import Signup from "./Signup";
 
 const PrivateRoute = ({ children }) => {
   const { token } = React.useContext(AuthContext);
@@ -15,6 +16,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route 
             path="/chat" 
             element={
