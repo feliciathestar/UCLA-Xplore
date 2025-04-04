@@ -377,8 +377,51 @@ def query_milvus_by_vector_similarity(query_text, top_k=5):
         return f"Milvus search error: {e}"
 
 def generate_llm_response(milvus_result: str):
-    # the input field also needs an extra 
-    return f"Concise response based on {milvus_result}"
+    """
+    Generate a natural language response about events using OpenAI's API.
+    
+    Args:
+        milvus_result: List of event details from Milvus query
+        
+    Returns:
+        String containing a natural language response about relevant events
+    """
+    try:
+        # Initialize OpenAI client
+        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        
+        # Format event information for the prompt
+        events_text = ""
+        for event in milvus_result:
+            events_text += f"\nEvent: {event.get('event_name', 'Unnamed event')}\n"
+            events_text += f"Location: {event.get('event_location', 'Location TBD')}\n"
+            events_text += f"Program: {event.get('event_programe', 'N/A')}\n"
+            events_text += f"Tags: {', '.join(event.get('event_tags', []))}\n"
+            events_text += f"Description: {event.get('event_description', 'No description available')}\n"
+        
+        # Create the prompt for GPT
+        prompt = f"""Based on the following UCLA events, provide a concise and natural response highlighting the most relevant details. 
+        Focus on key information like event names, times, locations, and any special features. Keep the response friendly and informative.
+        
+        Events:{events_text}
+        
+        Response:"""
+        # Call OpenAI API
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that provides information about UCLA events."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=300,
+            temperature=0.7
+        )
+        
+        # Extract and return the generated response
+        return response.choices[0].message.content.strip()
+        
+    except Exception as e:
+        return f"Sorry, I couldn't process the events information at this time. Error: {str(e)}"
 
 
 
@@ -395,12 +438,25 @@ def generate_llm_response(milvus_result: str):
 @app.post("/chat", response_model=ChatResponse)
 async def chat(chat_request: ChatRequest):
     # Pipeline: Postgres -> Milvus -> LLM
+    print("\n=== Starting Chat Pipeline ===")
+    print(f"Received message: {chat_request.message}")
+    
+    print("\n1. Querying Postgres...")
     event_ids = query_postgres(chat_request.message)
+    print(f"Postgres returned event_ids: {event_ids}")
+    
+    print("\n2. Querying Milvus...")
     milvus_result = query_milvus_by_list_ids(event_ids)
+    print(f"Milvus returned: {milvus_result}")
+    
+    print("\n3. Generating LLM Response...")
     llm_response = generate_llm_response(milvus_result)
+    print(f"Final response: {llm_response}")
+    
+    print("\n=== Chat Pipeline Complete ===\n")
     return {"response": llm_response}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
