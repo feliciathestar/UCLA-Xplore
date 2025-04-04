@@ -8,9 +8,12 @@ from datetime import datetime
 file_path = "/Users/wanxinxiao/Desktop/UCLA-Xplore/data/raw/events_calendar/w07_processed.xlsx"  # Update the path if necessary
 df = pd.read_excel(file_path)
 
+
+###### for connecting to postgres locally ######
+
 # PostgreSQL connection details
 DB_NAME = "event_scheduler"
-DB_USER = "wanxinxiao"
+DB_USER = "your_username"
 DB_PASSWORD = "your_password"
 DB_HOST = "localhost"
 DB_PORT = "5432"
@@ -20,6 +23,7 @@ conn = psycopg2.connect(
     dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT
 )
 cursor = conn.cursor()
+
 
 # Insert data into events table
 for _, row in df.iterrows():
