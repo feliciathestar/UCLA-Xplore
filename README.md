@@ -1,6 +1,6 @@
 # UCLA-Xplore
 
-A platform for exploring UCLA club events using natural language queries.
+A chatbot that answers questions regarding on-campus events, extracurricular activities, and ticketing information.
 
 ## Project Structure
 
