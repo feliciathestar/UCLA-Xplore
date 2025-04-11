@@ -90,9 +90,7 @@ class ChatResponse(BaseModel):
     # Outgoing response to user
     response: str
 
-#########################
-### Utility functions ###
-#########################
+
 def verify_password(plain_password, hashed_password):
     """
     Verify a password against a hashed password.
@@ -170,9 +168,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user
 
 
-##################
-### API routes ###
-##################
 
 # Register endpoint 
 @app.post("/auth/register", response_model=Token)
@@ -214,9 +209,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-##########################
-### Postgres Functions ###
-##########################
 
 def query_postgres(message: str):
     """
