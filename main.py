@@ -1,234 +1,269 @@
-# FastAPI 
-from fastapi import FastAPI, HTTPException, Depends, status
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-
-# authentication and authorization
-import jwt
-from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
-# database connection
+# Updated imports to use the latest recommended packages
+from langchain_community.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.output_parsers import PydanticOutputParser
+from langchain.agents import AgentExecutor, create_openai_tools_agent
+from langchain.tools import tool
+from pydantic.v1 import BaseModel, Field, validator  # Updated from langchain.pydantic_v1
+from typing import List, Optional
+from datetime import datetime, timedelta
 import psycopg2
 import os
 from dotenv import load_dotenv
 
-# milvus connection
-from pymilvus import connections, Collection
-import openai
-
-# Other imports
-from datetime import datetime, timezone, timedelta
-from typing import Optional
-
-
-# Initialize FastAPI app
-app = FastAPI()
+# Load environment variables
 load_dotenv()
-
-# Milvus connection constants
-MILVUS_ENDPOINT = os.getenv("MILVUS_ENDPOINT")
-MILVUS_TOKEN = os.getenv("MILVUS_TOKEN")
-MILVUS_COLLECTION_NAME = os.getenv("MILVUS_COLLECTION_NAME")
-
-# OpenAI constants
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# JWT configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+# Add this class with your other BaseModel definitions
+class TimeQueryData(BaseModel):
+    """Data structure for parsed time-related queries"""
+    date: Optional[str] = Field(None, description="Date in ISO format YYYY-MM-DD, e.g. 2025-04-15")
+    start_time: Optional[str] = Field(None, description="Start time in 24-hour format (HH:MM:SS), e.g. 14:30:00")
+    end_time: Optional[str] = Field(None, description="End time in 24-hour format (HH:MM:SS), e.g. 16:00:00")
+    interests: List[str] = Field([], description="List of extracurricular interests mentioned")
+    
+    @validator('date')
+    def validate_date(cls, v):
+        if v is None:
+            return None
+        try:
+            datetime.strptime(v, '%Y-%m-%d')
+            return v
+        except ValueError:
+            raise ValueError("Invalid date format. Expected YYYY-MM-DD")
+    
+    @validator('start_time', 'end_time')
+    def validate_time(cls, v):
+        if v is None:
+            return None
+        import re
+        if not re.match(r'^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$', v):
+            raise ValueError("Invalid time format. Expected HH:MM:SS in 24-hour format")
+        return v
 
-# CORS middleware to allow cross-origin requests
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows requests from any domain
-    allow_credentials=True,  # Allows cookies in cross-origin requests
-    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allows all headers in requests
-)
-
-# JWT configuration
-SECRET_KEY = "your_secret_key"  # change this in production
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-# Password hashing setup
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
-# In-memory "database" for demo purposes
-fake_users_db = {}
-
-#####################################
-### Define data validation models ###
-#####################################
-# converting an object into a format like JSON or XML that can be stored or transmitted over a network.
-class User(BaseModel):
-    # Internal user representation with secure password storage
-    username: str
-    email: str
-    hashed_password: str
-
-class UserIn(BaseModel):
-    # User registration model with raw password
-    username: str
-    email: str
-    password: str
-
-class Token(BaseModel):
-    # Authentication token response
-    access_token: str
-    token_type: str
-
-class ChatRequest(BaseModel):
-    # Incoming chat message from user
-    message: str
-
-class ChatResponse(BaseModel):
-    # Outgoing response to user
-    response: str
-
-
-def verify_password(plain_password, hashed_password):
+@tool
+def get_date_by_reference(reference: str, day_of_week: Optional[str] = None) -> str:
     """
-    Verify a password against a hashed password.
-    """
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password):
-    """
-    Hash a password for data security.
-    """
-    return pwd_context.hash(password)
-
-def create_jwt(data: dict, expires_delta: Optional [timedelta] = None) -> str:
-    """
-    Creates a JWT token with expiration.
+    Get a date based on a natural language reference and optional day of week.
     
     Args:
-        data: Dictionary of claims to encode in the token
-        expires_delta: Optional custom expiration time
-        
-    Returns:
-        Encoded JWT token as string
+        reference: Natural language date reference ('today', 'tomorrow', 'next week', 'this weekend', etc.)
+        day_of_week: Optional specific day of the week to find ('monday', 'tuesday', etc.)
     """
-    to_encode = data.copy()
-    # Use global constant for default expiration
-    expiration = expires_delta if expires_delta else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    expire = datetime.now(timezone.utc) + expiration
-    to_encode.update({"exp": expire})
+    today = datetime.now()
+    reference = reference.lower().strip()
     
-    try:
-        return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    except Exception as e:
-        # Log the error in a production environment
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Could not create authentication token"
-        )
-
-def get_user(username: str):
-    """
-    Get a user from the in-memory database
-    args:
-        username: The username from user input
-    returns:
-        User object if found, None otherwise
-    """
-    user = fake_users_db.get(username)
-    if user:
-        return User(**user)
-    return None
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    """"
-    Get the current user from the JWT token.
-    Args:
-        token: JWT token string
-    Returns:
-        User object if the token is valid
-    """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except jwt.PyJWTError:
-        raise credentials_exception
-    user = get_user(username=username)
-    if user is None:
-        raise credentials_exception
-    return user
-
-
-
-# Register endpoint 
-@app.post("/auth/register", response_model=Token)
-async def register(user: UserIn):
-    """
-    Register a new user with a hashed password.
-    """
-    if user.username in fake_users_db:
-        raise HTTPException(status_code=400, detail="Username already registered")
-    hashed_password = get_password_hash(user.password)
-    fake_users_db[user.username] = {
-        "username": user.username,
-        "email": user.email,
-        "hashed_password": hashed_password,
+    weekday_indices = {
+        "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
+        "friday": 4, "saturday": 5, "sunday": 6
     }
     
-    access_token = create_jwt(
-        data={"sub": user.username},
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-
-    return {"access_token": access_token, "token_type": "bearer"}
-
-# Login endpoint
-@app.post("/auth/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    """
-    Login a user and return an access token.
-    """
-    user = get_user(form_data.username)
-    if not user or not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    if reference == "today":
+        target_date = today
+    elif reference == "tomorrow":
+        target_date = today + timedelta(days=1)
+    elif reference in ["this week", "current week"]:
+        if not day_of_week:
+            target_date = today
+        else:
+            current_weekday = today.weekday()
+            target_weekday = weekday_indices.get(day_of_week.lower(), 0)
+            days_until = (target_weekday - current_weekday) % 7
+            if days_until == 0 and current_weekday == target_weekday:
+                target_date = today
+            else:
+                target_date = today + timedelta(days=days_until)
+    elif reference in ["next week"]:
+        days_until_monday = (0 - today.weekday()) % 7
+        if days_until_monday == 0:
+            days_until_monday = 7
+        next_monday = today + timedelta(days=days_until_monday)
+        
+        if not day_of_week:
+            target_date = next_monday
+        else:
+            target_weekday = weekday_indices.get(day_of_week.lower(), 0)
+            target_date = next_monday + timedelta(days=target_weekday)
+    elif reference in ["this weekend", "upcoming weekend", "the weekend"]:
+        days_until_saturday = (5 - today.weekday()) % 7
+        if days_until_saturday == 0 and today.weekday() != 5:
+            days_until_saturday = 7
+            
+        if day_of_week and day_of_week.lower() in ["saturday", "sunday"]:
+            if day_of_week.lower() == "saturday":
+                target_date = today + timedelta(days=days_until_saturday)
+            else:
+                target_date = today + timedelta(days=days_until_saturday + 1)
+        else:
+            target_date = today + timedelta(days=days_until_saturday)
+    else:
+        if day_of_week:
+            current_weekday = today.weekday()
+            target_weekday = weekday_indices.get(day_of_week.lower(), 0)
+            days_until = (target_weekday - current_weekday) % 7
+            if days_until == 0:
+                days_until = 7
+            target_date = today + timedelta(days=days_until)
+        else:
+            target_date = today
     
-    access_token = create_jwt(
-        data={"sub": user.username},
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    return target_date.strftime("%Y-%m-%d")
+
+@tool
+def format_time_range(time_reference: str, duration_hours: Optional[float] = None) -> dict:
+    """
+    Convert time references to standard start and end times.
+    
+    Args:
+        time_reference: Natural language time reference ('morning', 'afternoon', 'evening', 'night', or specific time)
+        duration_hours: Optional duration in hours if only start time is provided
+    """
+    import re
+    time_reference = time_reference.lower().strip()
+    
+    time_ranges = {
+        "morning": {"start": "08:00:00", "end": "12:00:00"},
+        "afternoon": {"start": "12:00:00", "end": "17:00:00"},
+        "evening": {"start": "17:00:00", "end": "21:00:00"},
+        "night": {"start": "19:00:00", "end": "23:00:00"},
+        "late night": {"start": "22:00:00", "end": "02:00:00"}
+    }
+    
+    if time_reference in time_ranges:
+        return time_ranges[time_reference]
+    
+    try:
+        if re.match(r'^\d{1,2}(:\d{2})?(am|pm)$', time_reference):
+            parts = re.match(r'^(\d{1,2})(?::(\d{2}))?(am|pm)$', time_reference)
+            hour = int(parts.group(1))
+            minute = int(parts.group(2) or 0)
+            ampm = parts.group(3)
+            
+            if ampm == "pm" and hour < 12:
+                hour += 12
+            elif ampm == "am" and hour == 12:
+                hour = 0
+                
+            start_time = f"{hour:02d}:{minute:02d}:00"
+            
+            if duration_hours:
+                end_hour = hour + int(duration_hours)
+                end_minute = minute + int((duration_hours - int(duration_hours)) * 60)
+                if end_minute >= 60:
+                    end_hour += 1
+                    end_minute -= 60
+                end_time = f"{end_hour % 24:02d}:{end_minute:02d}:00"
+            else:
+                end_hour = (hour + 1) % 24
+                end_time = f"{end_hour:02d}:{minute:02d}:00"
+                
+            return {"start": start_time, "end": end_time}
+            
+        elif re.match(r'^\d{1,2}:\d{2}$', time_reference):
+            hour, minute = map(int, time_reference.split(':'))
+            start_time = f"{hour:02d}:{minute:02d}:00"
+            
+            if duration_hours:
+                end_hour = hour + int(duration_hours)
+                end_minute = minute + int((duration_hours - int(duration_hours)) * 60)
+                if end_minute >= 60:
+                    end_hour += 1
+                    end_minute -= 60
+                end_time = f"{end_hour % 24:02d}:{end_minute:02d}:00"
+            else:
+                end_hour = (hour + 1) % 24
+                end_time = f"{end_hour:02d}:{minute:02d}:00"
+                
+            return {"start": start_time, "end": end_time}
+    except Exception:
+        return {"start": "09:00:00", "end": "17:00:00"}
+    
+    return {"start": "09:00:00", "end": "17:00:00"}
+
+def parse_query_with_llm(user_query: str) -> TimeQueryData:
+    """
+    Parse a user's natural language query into structured data using LangChain and LLM
+    
+    Args:
+        user_query: Natural language query from user
+        
+    Returns:
+        Structured TimeQueryData object with extracted date, time, and interest information
+    """
+    # Initialize the LLM
+    llm = ChatOpenAI(
+        model="gpt-3.5-turbo",
+        temperature=0,
+        api_key=OPENAI_API_KEY
     )
-
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
+    
+    # Setup the date and time tools
+    tools = [get_date_by_reference, format_time_range]
+    
+    # Create a parser for structured output
+    parser = PydanticOutputParser(pydantic_object=TimeQueryData)
+    
+    # Create the prompt
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """
+        You are an assistant that extracts structured information from user queries about UCLA events.
+        Extract the following information if present:
+        1. Date - Convert any date formats or references to YYYY-MM-DD using the get_date_by_reference tool
+        2. Start time and end time - Convert to 24-hour format HH:MM:SS using the format_time_range tool
+        3. Interests - Any extracurricular activities, clubs, or interests mentioned
+        
+        Use the provided tools to accurately convert dates and times.
+        Your goal is to extract this information in a structured format that can be used to query a database.
+        
+        Today's date is {current_date}.
+        
+        {format_instructions}
+        """.format(
+            current_date=datetime.now().strftime("%Y-%m-%d"),
+            format_instructions=parser.get_format_instructions()
+        )),
+        ("user", "{query}")
+    ])
+    
+    # Create an agent with tools
+    agent = create_openai_tools_agent(llm, tools, prompt)
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+    
+    try:
+        # Extract structured data from query using the agent
+        result = agent_executor.invoke({"query": user_query})
+        
+        # Parse the agent's output into TimeQueryData
+        final_result = parser.parse(result["output"])
+        return final_result
+    except Exception as e:
+        print(f"Error parsing query: {e}")
+        # Return empty structure if parsing fails
+        return TimeQueryData()
 
 def query_postgres(message: str):
     """
-    Query PostgreSQL database based on user message.
+    Query PostgreSQL database based on user message with LLM parsing.
     
     Args:
         message: User query string that will be parsed for date/time info
         
     Returns:
-        String of comma-separated event IDs matching the criteria
+        List of event IDs matching the criteria
     """
     try:
-        load_dotenv()
-
-        # Extract query parameters from message (this is simplified)
-        # Below are pre-defined sample input data. In a real implementation, you'd use NLP or parsing to extract date/time info
-        date = '2025-02-19'  
-        start_time = '12:00:00' 
-        end_time = '18:00:00' 
-
+        # Parse query using LLM with tools
+        parsed_data = parse_query_with_llm(message)
+        
+        # Use extracted data in the database query
+        date = parsed_data.date or datetime.now().strftime("%Y-%m-%d")  # Default to today
+        start_time = parsed_data.start_time or "00:00:00"  # Default to beginning of day
+        end_time = parsed_data.end_time or "23:59:59"  # Default to end of day
+        
+        print(f"Searching for events on {date} between {start_time} and {end_time}")
+        print(f"Interests: {parsed_data.interests}")
+        
         # Connect to PostgreSQL database
         conn = psycopg2.connect(
             dbname="xploredb",
@@ -238,7 +273,7 @@ def query_postgres(message: str):
         )
         cur = conn.cursor()
 
-        # Updated query to find events based on date AND time range
+        # Query to find events based on date AND time range
         query = """
         SELECT * FROM events 
         WHERE date = %s 
@@ -248,7 +283,7 @@ def query_postgres(message: str):
         cur.execute(query, (date, start_time, end_time))
         matching_events = cur.fetchall()
         
-        # Format results as concatenated event IDs
+        # Format results as event IDs list
         event_ids = []
         for event in matching_events:
             # Extract just the event_id (first element in each tuple)
@@ -261,138 +296,8 @@ def query_postgres(message: str):
         return event_ids
         
     except psycopg2.Error as e:
-        return f"Database error: {e}"
+        print(f"Database error: {e}")
+        return []
     except Exception as e:
-        return f"Error processing query: {e}"
-
-
-########################
-### Milvus functions ###
-########################
-
-def initialize_milvus():
-    connections.connect(uri=MILVUS_ENDPOINT, token=MILVUS_TOKEN)
-    collection = Collection(MILVUS_COLLECTION_NAME)
-    collection.load()
-    return collection
-
-def query_milvus_by_single_id(event_id):
-    """
-    Query Milvus database by one exact event ID
-    
-    Args:
-        event_id: The ID of the event to retrieve
-        
-    Returns:
-        Dictionary with event details or error message
-    """
-    try:
-        collection = initialize_milvus()
-        expr = f"event_id == {event_id}"
-        results = collection.query(
-            expr,
-            output_fields=["event_name", "event_tags", "event_programe", "event_location", "event_description"]
-        )
-        return results
-    except Exception as e:
-        return f"Milvus query error: {e}"
-
-def query_milvus_by_list_ids(event_ids: list):
-    """
-    Query Milvus database by multiple event IDs as a list
-    
-    Args:
-        event_ids: List of event IDs to retrieve
-        
-    Returns:
-        Dictionary with event details or error message
-    """
-    try:
-        collection = initialize_milvus()
-        
-        # Convert list to comma-separated string for Milvus query
-        ids_str = ",".join(str(id) for id in event_ids)
-        expr = f"event_id in [{ids_str}]"
-        
-        results = collection.query(
-            expr,
-            output_fields=["event_name", "event_tags", "event_programe", "event_location", "event_description"]
-        )
-        return results
-    except Exception as e:
-        return f"Milvus query error: {e}"
-
-def query_milvus_by_vector_similarity(query_text, top_k=5):
-    """
-    Query Milvus database using semantic similarity search
-    Used for when there is no event ID to search for (e.g., no time contraints)
-    
-    Args:
-        query_text: The text to search for
-        top_k: Number of top results to return
-        
-    Returns:
-        List of semantically similar events
-    """
-    try:
-        collection = initialize_milvus()
-        query_embedding = get_openai_embedding(query_text)
-        
-        if not query_embedding:
-            return "Failed to generate embedding for search"
-        
-        search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
-        results = collection.search(
-            data=[query_embedding],
-            anns_field="embedding",
-            param=search_params,
-            limit=top_k,
-            output_fields=["event_id", "event_name", "event_tags", "event_programe", "event_location", "event_description"]
-        )
-
-        # Format the results
-        formatted_results = []
-        for hits in results:
-            for hit in hits:
-                formatted_results.append({
-                    "id": hit.entity.get("event_id"),
-                    "name": hit.entity.get("event_name"),
-                    "tags": hit.entity.get("event_tags"),
-                    "program": hit.entity.get("event_programe"),
-                    "location": hit.entity.get("event_location"),
-                    "description": hit.entity.get("event_description"),
-                    "similarity": hit.distance
-                })
-        
-        return formatted_results
-    except Exception as e:
-        return f"Milvus search error: {e}"
-
-def generate_llm_response(milvus_result: str):
-    # the input field also needs an extra 
-    return f"Concise response based on {milvus_result}"
-
-
-
-# # Chat endpoint – requires authentication
-# @app.post("/chat", response_model=ChatResponse)
-# async def chat(chat_request: ChatRequest, current_user: User = Depends(get_current_user)):
-#     # Pipeline: Postgres -> Milvus -> LLM
-#     event_ids = query_postgres(chat_request.message)
-#     milvus_result = query_milvus_by_list_ids(event_ids)
-#     llm_response = generate_llm_response(milvus_result)
-#     return {"response": llm_response}
-
-# Chat endpoint – temporarily bypasses authentication
-@app.post("/chat", response_model=ChatResponse)
-async def chat(chat_request: ChatRequest):
-    # Pipeline: Postgres -> Milvus -> LLM
-    event_ids = query_postgres(chat_request.message)
-    milvus_result = query_milvus_by_list_ids(event_ids)
-    llm_response = generate_llm_response(milvus_result)
-    return {"response": llm_response}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
+        print(f"Error processing query: {e}")
+        return []
