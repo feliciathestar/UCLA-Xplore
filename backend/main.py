@@ -303,7 +303,7 @@ def query_milvus_by_single_id(event_id):
     except Exception as e:
         return f"Milvus query error: {e}"
 
-def query_milvus_by_list_ids(event_ids: list):
+def query_milsvus_by_list_id(event_ids: list):
     """
     Query Milvus database by multiple event IDs as a list
     
