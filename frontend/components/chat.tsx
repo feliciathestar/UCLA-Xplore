@@ -40,6 +40,7 @@ export function Chat({
     stop,
     reload,
   } = useChat({
+    api: '/api/chat',
     id,
     body: { id, selectedChatModel: selectedChatModel },
     initialMessages,
