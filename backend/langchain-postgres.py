@@ -1,26 +1,53 @@
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI 
 from langchain.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
-from langchain.pydantic_v1 import BaseModel, Field, validator
+from pydantic.v1 import BaseModel, Field, validator
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.tools import tool
 from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime, timedelta
 import re
 import os
+import json
 from dotenv import load_dotenv
-import psycopg2
 
 load_dotenv()
 
-# Aiven PostgreSQL Connection Details from .env
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-
-
+class CustomPydanticOutputParser(PydanticOutputParser):
+    def get_format_instructions(self) -> str:
+        schema = {
+            "properties": {
+                "date": {
+                    "title": "Date",
+                    "description": "Date in ISO format YYYY-MM-DD, e.g. 2025-04-15",
+                    "type": "string",
+                    "format": "date"
+                },
+                "start_time": {
+                    "title": "Start Time",
+                    "description": "Start time in 24-hour format (HH:MM:SS), e.g. 14:30:00",
+                    "type": "string",
+                    "format": "time"
+                },
+                "end_time": {
+                    "title": "End Time", 
+                    "description": "End time in 24-hour format (HH:MM:SS), e.g. 16:00:00",
+                    "type": "string",
+                    "format": "time"
+                },
+                "interests": {
+                    "title": "Interests",
+                    "description": "List of extracurricular interests mentioned",
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+            },
+            "type": "object"
+        }
+        
+        schema_str = json.dumps(schema)
+        
+        return f"The output should be formatted as a JSON instance that conforms to the JSON schema below.\n\n{schema_str}\n\nAs an example, for the schema {{'properties': {{'foo': {{'title': 'Foo', 'description': 'a list of strings', 'type': 'array', 'items': {{'type': 'string'}}}}}}, 'required': ['foo']}}, the object {{'foo': ['bar', 'baz']}} is a well-formatted instance."
 
 class TimeQueryData(BaseModel):
     """Data structure for parsed time-related queries"""
@@ -209,57 +236,94 @@ def parse_user_query(user_query: str) -> TimeQueryData:
         Structured TimeQueryData object with extracted date, time, and interest information
     """
     load_dotenv()
+    api_key=os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("Warning: OPENAI_API_KEY not found in environment variables")
+    else:
+        print(f"API Key found (first 10 chars): {api_key[:10]}...")
     
     llm = ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-3.5-turbo",
         temperature=0,
-        api_key=os.getenv("OPENAI_API_KEY")
-    )
-    
+        api_key=api_key
+    )    
     # Setup the date and time tools
     tools = [get_date_by_reference, format_time_range]
     
-    # Create a parser for structured output
-    parser = PydanticOutputParser(pydantic_object=TimeQueryData)
+    # Create a custom parser for structured output that works with pydantic v1
+    parser = CustomPydanticOutputParser(pydantic_object=TimeQueryData)
     
-    # Create the prompt
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """
-        You are an assistant that extracts structured information from user queries about UCLA events.
-        Extract the following information if present:
-        1. Date - Convert any date formats or references to YYYY-MM-DD using the get_date_by_reference tool
-        2. Start time and end time - Convert to 24-hour format HH:MM:SS using the format_time_range tool
-        3. Interests - Any extracurricular activities, clubs, or interests mentioned
-        
-        Use the provided tools to accurately convert dates and times.
-        Your goal is to extract this information in a structured format that can be used to query a database.
-        
-        Today's date is {current_date}.
-        
-        {format_instructions}
-        """.format(
-            current_date=datetime.now().strftime("%Y-%m-%d"),
-            format_instructions=parser.get_format_instructions()
-        )),
-        ("user", "{query}")
-    ])
-    
-    agent = create_openai_tools_agent(llm, tools, prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-    
+    # Using a direct way to extract info rather than agent, since agent requires agent_scratchpad
     try:
-        result = agent_executor.invoke({"query": user_query})
+        # First approach: Use direct query without agent
+        messages = [
+            {
+                "role": "system", 
+                "content": f"""You are an assistant that extracts structured information from user queries about UCLA events.
+                Extract the following information if present:
+                1. Date - Convert any date formats or references to YYYY-MM-DD 
+                2. Start time and end time - Convert to 24-hour format HH:MM:SS
+                3. Interests - Any extracurricular activities, clubs, or interests mentioned
+                
+                Today's date is {datetime.now().strftime("%Y-%m-%d")}.
+                
+                {parser.get_format_instructions()}"""
+            },
+            {"role": "user", "content": user_query}
+        ]
         
-
-        final_result = parser.parse(result["output"])
-        return final_result
+        response = llm.invoke(messages)
+        parsed_result = parser.parse(response.content)
+        
+        # Define weekday_indices here for post-processing
+        weekday_indices = {
+            "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
+            "friday": 4, "saturday": 5, "sunday": 6
+        }
+        
+        # Process dates and times if needed
+        if parsed_result.date and parsed_result.date.lower() not in ["today", "tomorrow"]:
+            # Try to convert from natural language if not already in YYYY-MM-DD format
+            if not re.match(r'^\d{4}-\d{2}-\d{2}$', parsed_result.date):
+                try:
+                    date_parts = parsed_result.date.split()
+                    if "next" in date_parts and len(date_parts) >= 2:
+                        day_of_week = date_parts[1].lower() if date_parts[1].lower() in weekday_indices else None
+                        parsed_result.date = get_date_by_reference("next week", day_of_week)
+                    elif any(day in parsed_result.date.lower() for day in weekday_indices.keys()):
+                        for day in weekday_indices.keys():
+                            if day in parsed_result.date.lower():
+                                parsed_result.date = get_date_by_reference("this week", day)
+                                break
+                except Exception as e:
+                    print(f"Error processing date: {e}")
+        
+        # Process time descriptions if needed
+        if parsed_result.start_time and not re.match(r'^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$', parsed_result.start_time):
+            try:
+                time_info = format_time_range(parsed_result.start_time)
+                parsed_result.start_time = time_info["start"]
+                if not parsed_result.end_time:
+                    parsed_result.end_time = time_info["end"]
+            except Exception as e:
+                print(f"Error processing start time: {e}")
+                
+        if parsed_result.end_time and not re.match(r'^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$', parsed_result.end_time):
+            try:
+                time_info = format_time_range(parsed_result.end_time)
+                parsed_result.end_time = time_info["end"]
+            except Exception as e:
+                print(f"Error processing end time: {e}")
+                
+        return parsed_result
+                
     except Exception as e:
         print(f"Error parsing query: {e}")
         return TimeQueryData()
 
 
 def test_parse_user_query():
-    """Test function to demonstrate the parser with semantic examples"""
+    """Test function to demonstrate the parser with examples"""
     test_queries = [
         "I'm looking for chess club events tomorrow afternoon",
         "Are there any basketball events from 3pm to 5pm on April 15th?",
