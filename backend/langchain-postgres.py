@@ -2,15 +2,15 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 from pydantic.v1 import BaseModel, Field, validator
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.tools import tool
 from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime, timedelta
 import re
 import os
 import json
 from dotenv import load_dotenv
+import openai
 
+# Load environment variables
 load_dotenv()
 
 class CustomPydanticOutputParser(PydanticOutputParser):
@@ -74,21 +74,9 @@ class TimeQueryData(BaseModel):
             raise ValueError("Invalid time format. Expected HH:MM:SS in 24-hour format")
         return v
 
-@tool
-def get_date_by_reference(
-    reference: str, 
-    day_of_week: Optional[Literal["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]] = None
-) -> str:
-    """
-    Get a date based on a natural language reference and optional day of week.
-    
-    Args:
-        reference: Natural language date reference ('today', 'tomorrow', 'next week', 'this weekend', etc.)
-        day_of_week: Optional specific day of the week to find ('monday', 'tuesday', etc.)
-        
-    Returns:
-        Date in ISO format YYYY-MM-DD
-    """
+# Define utility functions for date/time processing
+def get_date_by_reference(reference: str, day_of_week: Optional[str] = None) -> str:
+    """Process natural language date references into ISO format dates"""
     today = datetime.now()
     reference = reference.lower().strip()
     
@@ -106,7 +94,7 @@ def get_date_by_reference(
             target_date = today
         else:
             current_weekday = today.weekday()
-            target_weekday = weekday_indices[day_of_week]
+            target_weekday = weekday_indices.get(day_of_week.lower(), 0)
             days_until = (target_weekday - current_weekday) % 7
             if days_until == 0 and current_weekday == target_weekday:
                 target_date = today
@@ -115,54 +103,41 @@ def get_date_by_reference(
     elif reference in ["next week"]:
         days_until_monday = (0 - today.weekday()) % 7
         if days_until_monday == 0:
-            days_until_monday = 7  
+            days_until_monday = 7
         next_monday = today + timedelta(days=days_until_monday)
         
         if not day_of_week:
-            target_date = next_monday  
+            target_date = next_monday
         else:
-            target_weekday = weekday_indices[day_of_week]
+            target_weekday = weekday_indices.get(day_of_week.lower(), 0)
             target_date = next_monday + timedelta(days=target_weekday)
     elif reference in ["this weekend", "upcoming weekend", "the weekend"]:
         days_until_saturday = (5 - today.weekday()) % 7
         if days_until_saturday == 0 and today.weekday() != 5:
-            days_until_saturday = 7  
+            days_until_saturday = 7
             
-        if day_of_week and day_of_week in ["saturday", "sunday"]:
-            if day_of_week == "saturday":
+        if day_of_week and day_of_week.lower() in ["saturday", "sunday"]:
+            if day_of_week.lower() == "saturday":
                 target_date = today + timedelta(days=days_until_saturday)
-            else:  
+            else:
                 target_date = today + timedelta(days=days_until_saturday + 1)
         else:
             target_date = today + timedelta(days=days_until_saturday)
     else:
         if day_of_week:
             current_weekday = today.weekday()
-            target_weekday = weekday_indices[day_of_week]
+            target_weekday = weekday_indices.get(day_of_week.lower(), 0)
             days_until = (target_weekday - current_weekday) % 7
             if days_until == 0:
-                days_until = 7 
+                days_until = 7
             target_date = today + timedelta(days=days_until)
         else:
             target_date = today
     
     return target_date.strftime("%Y-%m-%d")
 
-@tool
-def format_time_range(
-    time_reference: str,
-    duration_hours: Optional[float] = None
-) -> Dict[str, str]:
-    """
-    Convert time references to standard start and end times.
-    
-    Args:
-        time_reference: Natural language time reference ('morning', 'afternoon', 'evening', 'night', or specific time)
-        duration_hours: Optional duration in hours if only start time is provided
-        
-    Returns:
-        Dictionary with start_time and end_time in 24-hour format (HH:MM:SS)
-    """
+def format_time_range(time_reference: str) -> Dict[str, str]:
+    """Convert natural language time references to structured time ranges"""
     time_reference = time_reference.lower().strip()
     
     time_ranges = {
@@ -189,35 +164,17 @@ def format_time_range(
                 hour = 0
                 
             start_time = f"{hour:02d}:{minute:02d}:00"
+            end_hour = (hour + 2) % 24  
+            end_time = f"{end_hour:02d}:{minute:02d}:00"
             
-            if duration_hours:
-                end_hour = hour + int(duration_hours)
-                end_minute = minute + int((duration_hours - int(duration_hours)) * 60)
-                if end_minute >= 60:
-                    end_hour += 1
-                    end_minute -= 60
-                end_time = f"{end_hour % 24:02d}:{end_minute:02d}:00"
-            else:
-                end_hour = (hour + 1) % 24
-                end_time = f"{end_hour:02d}:{minute:02d}:00"
-                
             return {"start": start_time, "end": end_time}
             
         elif re.match(r'^\d{1,2}:\d{2}$', time_reference):
             hour, minute = map(int, time_reference.split(':'))
             start_time = f"{hour:02d}:{minute:02d}:00"
+            end_hour = (hour + 2) % 24  
+            end_time = f"{end_hour:02d}:{minute:02d}:00"
             
-            if duration_hours:
-                end_hour = hour + int(duration_hours)
-                end_minute = minute + int((duration_hours - int(duration_hours)) * 60)
-                if end_minute >= 60:
-                    end_hour += 1
-                    end_minute -= 60
-                end_time = f"{end_hour % 24:02d}:{end_minute:02d}:00"
-            else:
-                end_hour = (hour + 1) % 24
-                end_time = f"{end_hour:02d}:{minute:02d}:00"
-                
             return {"start": start_time, "end": end_time}
     except Exception:
         return {"start": "09:00:00", "end": "17:00:00"}
@@ -226,8 +183,8 @@ def format_time_range(
 
 def parse_user_query(user_query: str) -> TimeQueryData:
     """
-    Parse a user's natural language query into structured data using LangChain 
-    with tools
+    Parse a user query into structured time and interest data.
+    Uses OpenAI directly to match the FastAPI architecture.
     
     Args:
         user_query: Natural language query from user
@@ -235,70 +192,77 @@ def parse_user_query(user_query: str) -> TimeQueryData:
     Returns:
         Structured TimeQueryData object with extracted date, time, and interest information
     """
-    load_dotenv()
-    api_key=os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY")
+    
     if not api_key:
         print("Warning: OPENAI_API_KEY not found in environment variables")
-    else:
-        print(f"API Key found (first 10 chars): {api_key[:10]}...")
+        return TimeQueryData()
+        
+    client = openai.OpenAI(api_key=api_key)
     
-    llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
-        temperature=0,
-        api_key=api_key
-    )    
-    # Setup the date and time tools
-    tools = [get_date_by_reference, format_time_range]
-    
-    # Create a custom parser for structured output that works with pydantic v1
+    # Create a custom parser
     parser = CustomPydanticOutputParser(pydantic_object=TimeQueryData)
     
-    # Using a direct way to extract info rather than agent, since agent requires agent_scratchpad
     try:
-        # First approach: Use direct query without agent
-        messages = [
-            {
-                "role": "system", 
-                "content": f"""You are an assistant that extracts structured information from user queries about UCLA events.
-                Extract the following information if present:
-                1. Date - Convert any date formats or references to YYYY-MM-DD 
-                2. Start time and end time - Convert to 24-hour format HH:MM:SS
-                3. Interests - Any extracurricular activities, clubs, or interests mentioned
-                
-                Today's date is {datetime.now().strftime("%Y-%m-%d")}.
-                
-                {parser.get_format_instructions()}"""
-            },
-            {"role": "user", "content": user_query}
-        ]
+        # Create the prompt for the model
+        system_content = f"""You are an assistant that extracts structured information from user queries about UCLA events.
+        Extract the following information if present:
+        1. Date - Convert any date formats or references to YYYY-MM-DD 
+        2. Start time and end time - Convert to 24-hour format HH:MM:SS
+        3. Interests - Any extracurricular activities, clubs, or interests mentioned
         
-        response = llm.invoke(messages)
-        parsed_result = parser.parse(response.content)
+        Today's date is {datetime.now().strftime("%Y-%m-%d")}.
         
-        # Define weekday_indices here for post-processing
+        {parser.get_format_instructions()}"""
+        
+        # Make the API call using the OpenAI client
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": user_query}
+            ]
+        )
+        
+        # Extract the content from the response
+        content = response.choices[0].message.content
+        
+        # Parse the response into our data model
+        parsed_result = parser.parse(content)
+        
+        # Post-process dates and times for consistency
         weekday_indices = {
             "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
             "friday": 4, "saturday": 5, "sunday": 6
         }
         
-        # Process dates and times if needed
-        if parsed_result.date and parsed_result.date.lower() not in ["today", "tomorrow"]:
-            # Try to convert from natural language if not already in YYYY-MM-DD format
-            if not re.match(r'^\d{4}-\d{2}-\d{2}$', parsed_result.date):
-                try:
-                    date_parts = parsed_result.date.split()
-                    if "next" in date_parts and len(date_parts) >= 2:
-                        day_of_week = date_parts[1].lower() if date_parts[1].lower() in weekday_indices else None
-                        parsed_result.date = get_date_by_reference("next week", day_of_week)
-                    elif any(day in parsed_result.date.lower() for day in weekday_indices.keys()):
-                        for day in weekday_indices.keys():
-                            if day in parsed_result.date.lower():
-                                parsed_result.date = get_date_by_reference("this week", day)
-                                break
-                except Exception as e:
-                    print(f"Error processing date: {e}")
+        # Process dates if needed
+        if parsed_result.date and not re.match(r'^\d{4}-\d{2}-\d{2}$', parsed_result.date):
+            try:
+                # Handle cases like "next Monday", "this weekend", etc.
+                if "next" in parsed_result.date.lower():
+                    for day in weekday_indices:
+                        if day in parsed_result.date.lower():
+                            parsed_result.date = get_date_by_reference("next week", day)
+                            break
+                elif "this" in parsed_result.date.lower():
+                    for day in weekday_indices:
+                        if day in parsed_result.date.lower():
+                            parsed_result.date = get_date_by_reference("this week", day)
+                            break
+                elif "tomorrow" in parsed_result.date.lower():
+                    parsed_result.date = get_date_by_reference("tomorrow")
+                elif "weekend" in parsed_result.date.lower():
+                    parsed_result.date = get_date_by_reference("this weekend")
+                elif any(day in parsed_result.date.lower() for day in weekday_indices):
+                    for day in weekday_indices:
+                        if day in parsed_result.date.lower():
+                            parsed_result.date = get_date_by_reference("this week", day)
+                            break
+            except Exception as e:
+                print(f"Error processing date: {e}")
         
-        # Process time descriptions if needed
         if parsed_result.start_time and not re.match(r'^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$', parsed_result.start_time):
             try:
                 time_info = format_time_range(parsed_result.start_time)
@@ -314,16 +278,39 @@ def parse_user_query(user_query: str) -> TimeQueryData:
                 parsed_result.end_time = time_info["end"]
             except Exception as e:
                 print(f"Error processing end time: {e}")
-                
+        
         return parsed_result
                 
     except Exception as e:
         print(f"Error parsing query: {e}")
         return TimeQueryData()
 
+def extract_query_parameters(user_query: str) -> Dict[str, Any]:
+    """
+    Process a user query and extract structured parameters for database queries.
+    
+    Args:
+        user_query: Natural language query from user
+        
+    Returns:
+        Dictionary with extracted parameters (date, start_time, end_time, interests)
+    """
+    parsed_data = parse_user_query(user_query)
+    
 
+    result = {
+        "date": parsed_data.date or datetime.now().strftime("%Y-%m-%d"), 
+        "start_time": parsed_data.start_time or "00:00:00",  
+        "end_time": parsed_data.end_time or "23:59:59",  
+        "interests": parsed_data.interests or []
+    }
+    
+    print(f"Extracted query parameters: {result}")
+    return result
+
+# Test function for interactive testing
 def test_parse_user_query():
-    """Test function to demonstrate the parser with examples"""
+    """Interactive test function for query parsing"""
     test_queries = [
         "I'm looking for chess club events tomorrow afternoon",
         "Are there any basketball events from 3pm to 5pm on April 15th?",
@@ -342,6 +329,7 @@ def test_parse_user_query():
         print(f"Start time: {result.start_time}")
         print(f"End time: {result.end_time}")
         print(f"Interests: {result.interests}")
+        print("-" * 50)
 
 if __name__ == "__main__":
     test_parse_user_query()
