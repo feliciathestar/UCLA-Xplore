@@ -1,34 +1,17 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, AuthContext } from "./AuthContext";
-import Login from "./Login";
-import Chat from "./Chat";
-import Signup from "./Signup";
-
-const PrivateRoute = ({ children }) => {
-  const { token } = React.useContext(AuthContext);
-  return token ? children : <Navigate to="/login" />;
-};
+import logo from './logo.svg';
+import './App.css';
+import TimeTable from './timetable.js' 
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route 
-            path="/chat" 
-            element={
-              <PrivateRoute>
-                <Chat />
-              </PrivateRoute>
-            } 
-          />
-          <Route path="/" element={<Navigate to="/chat" />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <div className="App">
+     <TimeTable rows={15} columns={7}> 
+
+     </TimeTable>
+       
+    
+
+    </div>
   );
 }
 
