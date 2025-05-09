@@ -1,0 +1,58 @@
+    /* Added logic to connect to bckend and get response
+    const backendData = await backendResponse.json();
+    // console.log('Backend data received:', backendData);
+
+    // Create a response message in the format the useChat hook expects
+    const responseMessage = {
+      id: generateUUID(), // Generate a unique ID for this message
+      role: 'assistant',
+      content: backendData.response || backendData.message || JSON.stringify(backendData),
+      createdAt: new Date().toISOString(),
+    };
+
+    // Save the message to chat history
+    // await saveMessages({
+    //   messages: [
+    //     {
+    //       chatId: id,
+    //       id: userMessage.id,
+    //       role: 'user',
+    //       parts: userMessage.parts,
+    //       attachments: userMessage.experimental_attachments ?? [],
+    //       createdAt: new Date(),
+    //     },
+    //     {
+    //       chatId: id,
+    //       id: responseMessage.id,
+    //       role: 'assistant',
+    //       parts: [responseMessage.content],
+    //       attachments: [],
+    //       createdAt: new Date(),
+    //     }
+    //   ],
+    // });
+    
+   
+    //Return the formatted response
+    return new Response(JSON.stringify({
+      id: responseMessage.id,
+      role: responseMessage.role,
+      content: responseMessage.content,
+      createdAt: responseMessage.createdAt,
+    }), { 
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    //return new Response(JSON.stringify(backendData), { status: 200 });
+  }
+
+  catch (error) {
+    return new Response('An error occurred while processing your request!', {
+      status: 500,
+    });
+  }
+}
+  */

@@ -28,6 +28,16 @@ export function Chat({
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  
+  const debugHandleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log("Form submission starting with input:", input);
+    try {
+      await handleSubmit(e);
+      console.log("Form submission completed successfully");
+    } catch (error) {
+      console.error("Form submission error:", error);
+    }
+  };
 
   const {
     messages,
@@ -48,9 +58,11 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
+      console.log("Chat() completed successfully!");
       mutate('/api/history');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Chat error details:", error);
       toast.error('An error occured, please try again!');
     },
   });
@@ -84,7 +96,7 @@ export function Chat({
           isArtifactVisible={isArtifactVisible}
         />
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+        <form onSubmit={debugHandleSubmit} className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
           {!isReadonly && (
             <MultimodalInput
               chatId={id}
@@ -101,6 +113,24 @@ export function Chat({
             />
           )}
         </form>
+
+        {/* <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+          {!isReadonly && (
+            <MultimodalInput
+              chatId={id}
+              input={input}
+              setInput={setInput}
+              handleSubmit={handleSubmit}
+              status={status}
+              stop={stop}
+              attachments={attachments}
+              setAttachments={setAttachments}
+              messages={messages}
+              setMessages={setMessages}
+              append={append}
+            />
+          )}
+        </form> */}
       </div>
 
       <Artifact

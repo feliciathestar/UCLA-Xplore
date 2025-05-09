@@ -3,11 +3,13 @@ import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 import { getUser } from '@/lib/db/queries';
+import jwt from 'jsonwebtoken';
 
 import { authConfig } from './auth.config';
 
 interface ExtendedSession extends Session {
   user: User;
+  token?: string; // Add the token property
 }
 
 export const {
@@ -18,20 +20,6 @@ export const {
 } = NextAuth({
   ...authConfig,
   secret: process.env.AUTH_SECRET,
-  // providers: [
-  //   Credentials({
-  //     credentials: {},
-  //     async authorize({ email, password }: any) {
-  //       const users = await getUser(email);
-  //       if (users.length === 0) return null;
-  //       // biome-ignore lint: Forbidden non-null assertion.
-  //       const passwordsMatch = await compare(password, users[0].password!);
-  //       if (!passwordsMatch) return null;
-  //       return users[0] as any;
-  //     },
-  //   }),
-  // ],
-  
   providers: [
     Credentials({
       credentials: {},
@@ -58,10 +46,19 @@ export const {
             return null;
           }
 
+          // Generate JWT token
+          console.log('Generating JWT token...');
+          const access_token = jwt.sign(
+            { sub: users[0].id, email: users[0].email },
+            process.env.AUTH_SECRET!,
+            { expiresIn: '1h' }
+          );
+
           console.log('Authorization successful for user:', email);
           return {
             id: users[0].id,
             email: users[0].email,
+            access_token: access_token,
             // Don't include password in the return object
           } as User;
 
@@ -95,6 +92,7 @@ export const {
     }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.token = token.access_token;
       }
 
       return session;
