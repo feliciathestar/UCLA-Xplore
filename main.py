@@ -412,12 +412,30 @@ async def chat(chat_request: ChatRequest):
     query_params = extract_query_parameters(chat_request.message)
     print(f"Extracted parameters: {query_params}")
     
+    # print("\n2. Querying Postgres...")
+    # event_ids = query_postgres(query_params)
+    # print(f"Postgres returned {len(event_ids)} event IDs")
+    
+    # print("\n3. Querying Milvus...")
+    # milvus_result = query_milvus_by_list_id(event_ids)
+
     print("\n2. Querying Postgres...")
     event_ids = query_postgres(query_params)
-    print(f"Postgres returned {len(event_ids)} event IDs")
+    print(f"Postgres returned {len(event_ids)} event IDs: {event_ids}") # Added event_ids content
     
     print("\n3. Querying Milvus...")
+    print(f"DEBUG: Calling query_milvus_by_list_id with event_ids: {event_ids}") # Debug print before call
     milvus_result = query_milvus_by_list_id(event_ids)
+    print(f"DEBUG: Raw milvus_result: {milvus_result}") # Debug print after call
+    if isinstance(milvus_result, str):
+        print(f"DEBUG: milvus_result is a STRING (likely an error from Milvus): {milvus_result}")
+    elif isinstance(milvus_result, list):
+        print(f"DEBUG: milvus_result is a LIST. Number of items: {len(milvus_result)}")
+        if milvus_result: # If list is not empty, print first item for inspection
+            print(f"DEBUG: First item in milvus_result: {milvus_result[0]}")
+    else:
+        print(f"DEBUG: milvus_result is of unexpected type: {type(milvus_result)}")
+
     
     print("\n4. Generating LLM Response...")
     llm_response = generate_llm_response(milvus_result)
