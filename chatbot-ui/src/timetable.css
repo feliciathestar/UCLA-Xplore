@@ -1,0 +1,41 @@
+
+
+
+
+
+.ttgrid{
+  display:grid;
+  grid-template-columns: repeat(var(--cols,7), 35px);
+  grid-template-rows: repeat(var(--rows,10), 35px);
+  gap : 25px;
+  user-select: none;
+}
+
+.ttbox{
+    text-align: center;
+  width:fit-content;
+  height:fit-content;
+  border: 1px solid black;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(72, 72, 72);
+    border: 2px solid #ccc;
+  border-top-color: #2d2b2b;
+  border-left-color: #2d2b2b ;
+  border-bottom-color: #888;
+  border-right-color: #888;
+
+}
+.ttbox:hover{
+    color: rgb(139, 32, 32);
+     border: 5px solid #ccc;
+     border-top-color: #2d2b2b;
+  border-left-color: #2d2b2b ;
+  border-bottom-color:rgb(71, 67, 67);
+  border-right-color: rgb(71, 67, 67);
+}
+.ttselected{
+  background-color: lightblue;
+  color:purple;
+}
