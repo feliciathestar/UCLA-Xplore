@@ -58,8 +58,11 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           </div>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarHistory user={user} />
+      {/* Ensure SidebarContent is a flex column and allows children to grow */}
+      <SidebarContent className="flex flex-col flex-grow"> {/* Added flex-grow here if Sidebar itself is a flex item */}
+        <div className="flex-shrink-0"> {/* Prevent SidebarHistory from shrinking */}
+          <SidebarHistory user={user} />
+        </div>
       </SidebarContent>
       <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
     </Sidebar>

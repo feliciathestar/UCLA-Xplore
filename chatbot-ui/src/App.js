@@ -1,16 +1,10 @@
-import logo from './logo.svg';
 import './App.css';
-import TimeTable from './timetable.js' 
+import TimeTable from './timetable.js';
 
 function App() {
   return (
     <div className="App">
-     <TimeTable rows={15} columns={7}> 
-
-     </TimeTable>
-       
-    
-
+      <TimeTable rows={15} columns={7} />
     </div>
   );
 }

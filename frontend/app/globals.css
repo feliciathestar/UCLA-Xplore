@@ -162,3 +162,40 @@
 .suggestion-highlight {
     @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
 }
+
+
+
+.timetable-grid { /* Renamed from .grid */
+  display:grid;
+  grid-template-columns: repeat(var(--cols,7), 30px); /* Adjusted size for sidebar */
+  grid-template-rows: repeat(var(--rows,10), 30px); /* Adjusted size for sidebar */
+  gap : 3px; /* Adjusted gap */
+  user-select: none;
+  background-color: hsl(var(--sidebar-background)); /* Match sidebar background */
+  border: 1px solid hsl(var(--sidebar-border));
+  border-radius: var(--radius);
+  padding: 5px;
+}
+
+.timetable-box { /* Renamed from .box */
+  width: 100%; /* Make box fill cell */
+  height: 100%; /* Make box fill cell */
+  border: 1px solid hsl(var(--sidebar-border)); /* Use sidebar border color */
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  color: hsl(var(--sidebar-foreground)); /* Use sidebar text color */
+  font-size: 0.7rem; /* Smaller font for sidebar */
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.timetable-box:hover { /* Adjusted selector */
+  background-color: hsl(var(--sidebar-accent)); /* Use sidebar accent for hover */
+}
+
+.timetable-selected { /* Renamed from .selected */
+  background-color: hsl(var(--sidebar-primary)) !important; /* Use sidebar primary for selected */
+  color: hsl(var(--sidebar-primary-foreground)) !important;
+  border-color: hsl(var(--sidebar-primary)) !important;
+}
