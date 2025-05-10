@@ -188,12 +188,13 @@ async def root():
 def query_postgres(params: Dict[str, Any]):
     """
     Query PostgreSQL database based on extracted parameters.
+    Only filters by date and time, not interests.
     """
     try:
         date = params["date"]
         start_time = params["start_time"]
         end_time = params["end_time"]
-        interests = params["interests"]
+        # Interests are no longer used in this function
 
         # Connect to PostgreSQL database
         conn = psycopg2.connect(
@@ -207,7 +208,7 @@ def query_postgres(params: Dict[str, Any]):
 
         cur = conn.cursor()
         
-        # Base query for date and time
+        # Base query for date and time only
         query = """
         SELECT event_id FROM events 
         WHERE date = %s 
@@ -216,13 +217,7 @@ def query_postgres(params: Dict[str, Any]):
         """
         
         query_params = [date, start_time, end_time]
-        
-        # Add interest filtering if interests are provided
-        if interests and len(interests) > 0:
-            placeholders = ', '.join(['%s'] * len(interests))
-            query += f" AND event_type IN ({placeholders})"
-            query_params.extend(interests)
-            
+                
         cur.execute(query, query_params)
         matching_events = cur.fetchall()
 
@@ -344,17 +339,26 @@ def query_milvus_by_vector_similarity(query_text, top_k=5):
     except Exception as e:
         return f"Milvus search error: {e}"
 
-def generate_llm_response(milvus_result: str):
+def generate_llm_response(milvus_result):
     """
     Generate a natural language response about events using OpenAI's API.
     
     Args:
-        milvus_result: List of event details from Milvus query
+        milvus_result: List of event details from Milvus query or error string
         
     Returns:
         String containing a natural language response about relevant events
     """
     try:
+        # Handle error strings from Milvus
+        if isinstance(milvus_result, str):
+            print(f"Error from Milvus: {milvus_result}")
+            return f"Sorry, I encountered an issue while retrieving event information: {milvus_result}"
+        
+        # Handle empty results
+        if not milvus_result:
+            return "I couldn't find any events matching your criteria. Perhaps try a different date, time, or interests?"
+        
         # Initialize OpenAI client
         client = openai.OpenAI(api_key=OPENAI_API_KEY)
         
@@ -364,7 +368,14 @@ def generate_llm_response(milvus_result: str):
             events_text += f"\nEvent: {event.get('event_name', 'Unnamed event')}\n"
             events_text += f"Location: {event.get('event_location', 'Location TBD')}\n"
             events_text += f"Program: {event.get('event_programe', 'N/A')}\n"
-            events_text += f"Tags: {', '.join(event.get('event_tags', []))}\n"
+            
+            # Handle tags properly - could be a string or a list
+            tags = event.get('event_tags', [])
+            if isinstance(tags, list):
+                events_text += f"Tags: {', '.join(tags) if tags else 'N/A'}\n"
+            else:
+                events_text += f"Tags: {tags if tags else 'N/A'}\n"
+            
             events_text += f"Description: {event.get('event_description', 'No description available')}\n"
         
         # Create the prompt for GPT
@@ -404,7 +415,7 @@ def generate_llm_response(milvus_result: str):
 # Chat endpoint – temporarily bypasses authentication
 @app.post("/chat", response_model=ChatResponse)
 async def chat(chat_request: ChatRequest):
-    # Pipeline: Parse -> Postgres -> Milvus -> LLM
+    # Pipeline: Parse -> Postgres (time filter) -> Milvus (Interest filter) -> LLM
     print("\n=== Starting Chat Pipeline ===")
     print(f"Received message: {chat_request.message}")
     
@@ -412,31 +423,24 @@ async def chat(chat_request: ChatRequest):
     query_params = extract_query_parameters(chat_request.message)
     print(f"Extracted parameters: {query_params}")
     
-    # print("\n2. Querying Postgres...")
-    # event_ids = query_postgres(query_params)
-    # print(f"Postgres returned {len(event_ids)} event IDs")
-    
-    # print("\n3. Querying Milvus...")
-    # milvus_result = query_milvus_by_list_id(event_ids)
-
-    print("\n2. Querying Postgres...")
+    print("\n2. Querying Postgres for date/time filtering...")
     event_ids = query_postgres(query_params)
-    print(f"Postgres returned {len(event_ids)} event IDs: {event_ids}") # Added event_ids content
+    print(f"Postgres returned {len(event_ids)} event IDs: {event_ids}")
     
     print("\n3. Querying Milvus...")
-    print(f"DEBUG: Calling query_milvus_by_list_id with event_ids: {event_ids}") # Debug print before call
+    print(f"DEBUG: Calling query_milvus_by_list_id with event_ids: {event_ids}")
     milvus_result = query_milvus_by_list_id(event_ids)
-    print(f"DEBUG: Raw milvus_result: {milvus_result}") # Debug print after call
+    print(f"DEBUG: Raw milvus_result: {type(milvus_result).__name__}")
+    
     if isinstance(milvus_result, str):
         print(f"DEBUG: milvus_result is a STRING (likely an error from Milvus): {milvus_result}")
     elif isinstance(milvus_result, list):
         print(f"DEBUG: milvus_result is a LIST. Number of items: {len(milvus_result)}")
-        if milvus_result: # If list is not empty, print first item for inspection
+        if milvus_result:
             print(f"DEBUG: First item in milvus_result: {milvus_result[0]}")
     else:
         print(f"DEBUG: milvus_result is of unexpected type: {type(milvus_result)}")
 
-    
     print("\n4. Generating LLM Response...")
     llm_response = generate_llm_response(milvus_result)
     print(f"Final response: {llm_response}")
