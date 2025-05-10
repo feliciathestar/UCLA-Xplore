@@ -223,14 +223,17 @@ const TimeTable: React.FC<TimeTableProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-sm font-medium text-sidebar-foreground flex-shrink-0">
+      <div className="flex justify-between items-center mb-3 pb-2 border-b border-ucla-blue/20">
+        <h3 className="text-lg font-semibold text-ucla-blue-800">
           Availability 
-          <span className="text-xs ml-2 text-muted-foreground">(Hold Shift to replace selection)</span>
+          <span className="text-xs ml-2 font-normal text-muted-foreground">
+            (Hold Shift to replace selection)
+          </span>
         </h3>
         <button 
           onClick={() => setSelectedBoxes([])} 
-          className="text-xs py-1 px-2 bg-sidebar-foreground/10 hover:bg-sidebar-foreground/20 rounded text-muted-foreground hover:text-foreground transition-colors"
+          className="text-xs py-2 px-3 bg-ucla-blue/10 hover:bg-ucla-blue/20 
+          rounded-md text-ucla-blue-700 transition-colors"
         >
           Reset
         </button>
@@ -256,10 +259,11 @@ const TimeTable: React.FC<TimeTableProps> = ({
             <div 
               key={`header-${index}`} 
               style={{
-                ...headerCellStyle, 
+                ...headerCellStyle,
                 borderRight: index === cols - 1 ? undefined : "1px solid hsl(var(--sidebar-border))",
-                borderBottom: "1px solid hsl(var(--sidebar-border))"
+                borderBottom: "2px solid hsl(var(--ucla-yellow))",
               }}
+              className="timetable-header"
             >
               <div>{header.date}</div>
               <div>{header.weekday}</div>
@@ -274,14 +278,15 @@ const TimeTable: React.FC<TimeTableProps> = ({
               {/* Time label for the hour */}
               <div 
                 style={{
-                  ...timeLabelCellStyle, 
-                  borderRight: "1px solid hsl(var(--sidebar-border))",
-                  borderBottom: hourIndex === rows - 1 ? undefined : "1px solid hsl(var(--sidebar-border))",
+                  ...timeLabelCellStyle,
+                  borderRight: "2px solid hsl(var(--ucla-blue)/30%)",
+                  borderBottom: hourIndex === rows - 1 ? undefined : "1px solid hsl(0, 0%, 85%)",
                   // Make it taller to accommodate both 30-min slots
                   gridRow: `span 2`,
                   // Center content vertically
                   alignItems: "center",
                 }}
+                className="timetable-time-label"
               >
                 {timeLabels[hourRowIndex]} {/* First label of the pair */}
               </div>
@@ -306,8 +311,8 @@ const TimeTable: React.FC<TimeTableProps> = ({
                       position: 'relative', // For positioning the half-hour divider
                       padding: 0, // Remove padding to allow for inner divs
                       display: 'block', // Override flex to allow for inner content positioning
-                      borderRight: colIndex === cols - 1 ? undefined : "1px solid hsl(var(--sidebar-border))",
-                      borderBottom: hourIndex === rows - 1 ? undefined : "1px solid hsl(var(--sidebar-border))",
+                      borderRight: colIndex === cols - 1 ? undefined : "1px solid hsl(0, 0%, 85%)",
+                      borderBottom: hourIndex === rows - 1 ? undefined : "1px solid hsl(0, 0%, 85%)",
                     }}
                   >
                     {/* First 30-minute slot */}
@@ -319,12 +324,13 @@ const TimeTable: React.FC<TimeTableProps> = ({
                       aria-selected={firstHalfSelected}
                       style={{
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: '50%',
+                        top: '1px',
+                        left: '1px',
+                        right: '2px',
+                        bottom: '50%', 
                         cursor: 'pointer',
                         backgroundColor: firstHalfSelected ? 'var(--selection-color, lightblue)' : undefined,
+                        zIndex: 2,
                       }}
                     />
                     
@@ -335,9 +341,9 @@ const TimeTable: React.FC<TimeTableProps> = ({
                         left: 0,
                         right: 0,
                         top: '50%',
-                        height: '1px',
-                        borderBottom: '1px dashed hsl(var(--sidebar-border))',
-                        zIndex: 1,
+                        height: '0px', 
+                        borderBottom: '1px dashed hsl(0, 0%, 85%)',
+                        zIndex: 3,
                       }}
                     />
                     
@@ -351,11 +357,12 @@ const TimeTable: React.FC<TimeTableProps> = ({
                       style={{
                         position: 'absolute',
                         top: '50%',
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
+                        left: '1px',
+                        right: '2px',
+                        bottom: '2px',
                         cursor: 'pointer',
                         backgroundColor: secondHalfSelected ? 'var(--selection-color, lightblue)' : undefined,
+                        zIndex: 2,
                       }}
                     />
                   </div>

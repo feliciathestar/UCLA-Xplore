@@ -14,6 +14,10 @@ import {
   SidebarHeader,
   SidebarMenu,
   useSidebar,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -23,7 +27,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
 
   return (
-    <Sidebar className="group-data-[side=left]:border-r-0">
+    <Sidebar className="group-data-[side=left]:border-r-ucla-blue/20">
       <SidebarHeader>
         <SidebarMenu>
           <div className="flex flex-row justify-between items-center">
@@ -58,11 +62,14 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           </div>
         </SidebarMenu>
       </SidebarHeader>
-      {/* Ensure SidebarContent is a flex column and allows children to grow */}
-      <SidebarContent className="flex flex-col flex-grow"> {/* Added flex-grow here if Sidebar itself is a flex item */}
-        <div className="flex-shrink-0"> {/* Prevent SidebarHistory from shrinking */}
-          <SidebarHistory user={user} />
-        </div>
+      <SidebarContent className="flex flex-col flex-grow"> 
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarHistory user={user} />
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarSeparator />
+        {/* Add more groups as needed */}
       </SidebarContent>
       <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
     </Sidebar>

@@ -6,6 +6,12 @@
     --foreground-rgb: 0, 0, 0;
     --background-start-rgb: 214, 219, 220;
     --background-end-rgb: 255, 255, 255;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --ucla-blue: 195 75% 63%; /* #5BC2E7 in HSL */
+    --ucla-yellow: 50 100% 65%; /* #FFE14C in HSL */
+    --sidebar-border: 220 13% 91%;
+    --sidebar-foreground: 220 9% 46%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,13 +36,13 @@
         --card-foreground: 240 10% 3.9%;
         --popover: 0 0% 100%;
         --popover-foreground: 240 10% 3.9%;
-        --primary: 240 5.9% 10%;
-        --primary-foreground: 0 0% 98%;
+        --primary: 196 72% 64%;  /* UCLA Blue */
+        --primary-foreground: 0 0% 100%;
         --secondary: 240 4.8% 95.9%;
         --secondary-foreground: 240 5.9% 10%;
         --muted: 240 4.8% 95.9%;
         --muted-foreground: 240 3.8% 46.1%;
-        --accent: 240 4.8% 95.9%;
+        --accent: 50 100% 65%;  /* UCLA Yellow */
         --accent-foreground: 240 5.9% 10%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 0 0% 98%;
@@ -51,12 +57,15 @@
         --radius: 0.5rem;
         --sidebar-background: 0 0% 98%;
         --sidebar-foreground: 240 5.3% 26.1%;
-        --sidebar-primary: 240 5.9% 10%;
+        --sidebar-primary: 196 72% 64%;  /* UCLA Blue */
         --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 240 4.8% 95.9%;
+        --sidebar-accent: 50 100% 65%;  /* UCLA Yellow */
         --sidebar-accent-foreground: 240 5.9% 10%;
         --sidebar-border: 220 13% 91%;
         --sidebar-ring: 217.2 91.2% 59.8%;
+        --sidebar-accent-alt: 196 72% 95%; /* Light blue for subtle backgrounds */
+        --ucla-blue: 196 72% 64%;  /* #5BC2E7 in HSL */
+        --ucla-yellow: 50 100% 65%; /* #FFE14C in HSL */
     }
     .dark {
         --background: 240 10% 3.9%;
@@ -65,13 +74,13 @@
         --card-foreground: 0 0% 98%;
         --popover: 240 10% 3.9%;
         --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 240 5.9% 10%;
+        --primary: 196 72% 54%;  /* UCLA Blue for dark mode */
+        --primary-foreground: 0 0% 98%;
         --secondary: 240 3.7% 15.9%;
         --secondary-foreground: 0 0% 98%;
         --muted: 240 3.7% 15.9%;
         --muted-foreground: 240 5% 64.9%;
-        --accent: 240 3.7% 15.9%;
+        --accent: 50 100% 60%;  /* UCLA Yellow for dark mode */
         --accent-foreground: 0 0% 98%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
@@ -85,23 +94,24 @@
         --chart-5: 340 75% 55%;
         --sidebar-background: 240 5.9% 10%;
         --sidebar-foreground: 240 4.8% 95.9%;
-        --sidebar-primary: 224.3 76.3% 48%;
+        --sidebar-primary: 196 72% 54%;  /* UCLA Blue */
         --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent: 196 72% 25%;  /* Darker blue for hover */
         --sidebar-accent-foreground: 240 4.8% 95.9%;
         --sidebar-border: 240 3.7% 15.9%;
         --sidebar-ring: 217.2 91.2% 59.8%;
+        --sidebar-accent-alt: 50 80% 50%; /* Muted yellow */
+        --ucla-blue: 196 72% 54%;  /* Slightly darker blue for dark mode */
+        --ucla-yellow: 50 100% 60%; /* Slightly darker yellow for dark mode */
     }
 }
 
-@layer base {
-    * {
-        @apply border-border;
-    }
-
-    body {
-        @apply bg-background text-foreground;
-    }
+@layer components {
+  /* Add your custom classes here */
+  .timetable-selected {
+    --selection-color: hsla(var(--ucla-blue), 30%);
+    background-color: var(--selection-color) !important;
+  }
 }
 
 .skeleton {
@@ -111,15 +121,15 @@
 
     *[class^="text-"] {
         color: transparent;
-        @apply rounded-md bg-foreground/20 select-none animate-pulse;
+        @apply rounded-md bg-gray-200 animate-pulse select-none; /* Changed from bg-muted to bg-gray-200 */
     }
 
     .skeleton-bg {
-        @apply bg-foreground/10;
+        @apply bg-gray-200/50; /* Changed from bg-muted/50 */
     }
 
     .skeleton-div {
-        @apply bg-foreground/20 animate-pulse;
+        @apply bg-gray-200 animate-pulse; /* Changed from bg-muted */
     }
 }
 
@@ -163,39 +173,100 @@
     @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
 }
 
-
-
-.timetable-grid { /* Renamed from .grid */
-  display:grid;
-  grid-template-columns: repeat(var(--cols,7), 30px); /* Adjusted size for sidebar */
-  grid-template-rows: repeat(var(--rows,10), 30px); /* Adjusted size for sidebar */
-  gap : 3px; /* Adjusted gap */
+.timetable-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols,7), 30px);
+  grid-template-rows: repeat(var(--rows,10), 30px);
+  gap: 3px;
   user-select: none;
-  background-color: hsl(var(--sidebar-background)); /* Match sidebar background */
+  background-color: hsl(var(--sidebar-background));
   border: 1px solid hsl(var(--sidebar-border));
   border-radius: var(--radius);
   padding: 5px;
 }
 
-.timetable-box { /* Renamed from .box */
-  width: 100%; /* Make box fill cell */
-  height: 100%; /* Make box fill cell */
-  border: 1px solid hsl(var(--sidebar-border)); /* Use sidebar border color */
-  display:flex;
+.timetable-box {
+  width: 100%;
+  height: 100%;
+  border: 1px solid hsl(var(--sidebar-border));
+  display: flex;
   justify-content: center;
   align-items: center;
-  color: hsl(var(--sidebar-foreground)); /* Use sidebar text color */
-  font-size: 0.7rem; /* Smaller font for sidebar */
+  color: hsl(var(--sidebar-foreground));
+  font-size: 0.7rem;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
-.timetable-box:hover { /* Adjusted selector */
-  background-color: hsl(var(--sidebar-accent)); /* Use sidebar accent for hover */
+.timetable-box:hover {
+  background-color: hsl(var(--ucla-blue)/10%);
+  border-color: hsl(var(--ucla-blue)/40%);
 }
 
-.timetable-selected { /* Renamed from .selected */
-  background-color: hsl(var(--sidebar-primary)) !important; /* Use sidebar primary for selected */
-  color: hsl(var(--sidebar-primary-foreground)) !important;
-  border-color: hsl(var(--sidebar-primary)) !important;
+/* Updated selection styling with UCLA blue */
+.timetable-selected {
+  background-color: hsl(var(--ucla-blue)) !important;
+  color: white !important;
+  border-color: hsl(var(--ucla-blue)) !important;
+  box-shadow: 0 0 0 1px hsl(var(--ucla-blue)/70%);
+  transform: scale(1.05);
+  z-index: 1;
+}
+
+/* Header cells for days of week */
+.timetable-header {
+  font-weight: 600;
+  background-color: hsl(var(--ucla-yellow)/15%);
+  border-bottom: 2px solid hsl(var(--ucla-yellow));
+}
+
+/* Time label cells */
+.timetable-time-label {
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  border-right: 2px solid hsl(var(--ucla-blue)/30%);
+}
+
+.timetable-half-box {
+  transition: all 0.15s ease-in-out;
+}
+
+.timetable-half-box.timetable-selected {
+  animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Yellow highlight for current day column */
+.timetable-today {
+  background-color: hsl(var(--ucla-yellow)/15%);
+}
+
+/* Special styling for alternating rows */
+.timetable-hour-even {
+  background-color: hsl(var(--ucla-blue)/5%);
+}
+
+/* Add UCLA-themed styling to sidebars */
+[data-sidebar="sidebar"] {
+  border-color: hsla(var(--ucla-blue), 0.2);
+  box-shadow: 0 0 15px hsla(var(--ucla-blue), 0.05);
+}
+
+/* Give sidebar components a subtle UCLA blue accent */
+[data-sidebar="header"],
+[data-sidebar="footer"] {
+  border-bottom: 1px solid hsla(var(--ucla-blue), 0.1);
+  border-top: 1px solid hsla(var(--ucla-blue), 0.1);
+}
+
+/* Add UCLA themed hover and active states to menu buttons */
+[data-sidebar="menu-button"]:hover,
+[data-sidebar="menu-button"][data-active="true"] {
+  background-color: hsla(var(--ucla-blue), 0.1);
+  border-color: hsla(var(--ucla-blue), 0.2);
 }
