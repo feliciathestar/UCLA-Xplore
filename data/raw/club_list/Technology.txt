@@ -1,0 +1,1689 @@
+Title: Student Organizations | Student Organizations,
+
+URL Source: https://sa.ucla.edu/RCO/public/search?category=Technology
+
+Markdown Content:
+Graduate
+
+Undergraduate
+
+Graduate/Undergraduate
+
+Staff/Faculty/Administrators
+
+ACM Teach LA
+
+ACM Teach LA is a nonprofit organization dedicated to making CS education more equitable in LA! We teach weekly classes focusing on a variety of topics (from Introduction to Python all the way to Data Structures and Algorithms) and have a development team that writes education support software. No previous experience is required, and we love anybody and everybody who has a passion for teaching! If you're interested, feel free to reach out!
+
+Category:
+
+Service - Outreach, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+LEROY BETTERTON GAGE
+
+Signatory 2:
+
+FARIS ELTAKI
+
+Signatory 3:
+
+TIFFANY CHEN
+
+Advisor:
+
+ORLANDO LUNA
+
+AI and Eye
+
+AI and Eye aims to increase the Awareness, Accessibility, and Affordability of eye care to prevent avoidable vision impairment and blindness. Our goal is to develop innovative solutions that address the Triple-A of eye care utilizing artificial intelligence and digital tools. We seek to help individuals preserve their vision for life and build a community of students interested in the intersection of healthcare, medical innovation, and global health.
+
+Category:
+
+Medical, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+ADITYA GUPTA
+
+Signatory 2:
+
+ALEXI MELKI
+
+Signatory 3:
+
+ARJUN GUTTA
+
+Advisor:
+
+MARIA ANNA CAPINPIN
+
+AI Safety at UCLA
+
+AI Safety at UCLA researches the impact of increasingly powerful AI systems. We promote the development of fair, secure, and useful AI tools. Join us if you'd like to learn about AI Safety and research how we can use AI to build a better future. http://aisafetyatucla.org/
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Signatory 1:
+
+WILLIAM ZHOU
+
+Signatory 2:
+
+CHRISTOPHER MILAN
+
+Signatory 3:
+
+Steven Adam Veld
+
+Advisor:
+
+ORLANDO LUNA
+
+American Institute of Aeronautics and Astronautics at UCLA
+
+AIAA is the world’s largest technical society dedicated to the global aerospace profession. Created in 1963 by the merger of the two great aerospace societies of the day, the American Rocket Society (founded in 1930 as the American Interplanetary Society), and the Institute of the Aerospace Sciences (established in 1933 as the Institute of the Aeronautical Sciences), AIAA carries forth a proud tradition of more than 80 years of aerospace leadership. AIAA currently has more than 240 student branches, including 40+ international student branches, with a total active membership of over 7,500 students worldwide. The UCLA student branch of AIAA will be your base of operations during your college years. Meet fellow students who share your passion and commitment to aerospace. Student branches foster opportunities for growth by allowing members to engage with real world engineering projects, networking with fellow students and faculty interested in aerospace, and providing professional development resources. AIAA at UCLA is home to four unique engineering student projects: Design Build Fly, Uncrewed Aerial Systems, Bruin Spacecraft Group, and Rocket Project.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+SUJAL KUMAR
+
+Signatory 2:
+
+JASON YUAN
+
+Signatory 3:
+
+KYRA ALLEN
+
+Advisor:
+
+ORLANDO LUNA
+
+Art.ificial
+
+Art.Ificial at UCLA is a student organization dedicated to serving students interested in industries at the intersection of art and technology. If you’re interested in technology for music, graphic art, film, or anything else you can imagine, this is the community for you. We host guest speakers from industry, hold professional development events, and run project spaces for various art tech disciplines. Most importantly, we aim to be a community for all students in these spaces.
+
+Category:
+
+Arts, Technology
+
+Email:
+
+Social Media:
+
+Signatory 1:
+
+DHRUV KRISHAN
+
+Signatory 2:
+
+THOMAS FREEDMAN
+
+Signatory 3:
+
+MAX DAVIS-HOUSEFIELD
+
+Advisor:
+
+ARANZA GUZMAN
+
+Association for Computing Machinery
+
+ACM at UCLA is the largest computer science student organization in Southern California. We welcome students of all backgrounds, interests, and skill levels to join our community and share our love for technology. ACM is comprised of eight committees — each serving a different topic and mission. Our events are open to everyone, regardless of major or experience!
+
+Category:
+
+Technology, Educational
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+MERYL MATHEW
+
+Signatory 2:
+
+TIFFANY CHEN
+
+Signatory 3:
+
+ALYSSA LEUNG
+
+Advisor:
+
+ORLANDO LUNA
+
+Association for Computing Machinery - Women
+
+ACM-W supports, celebrates, and advocates for the full engagement of all who are interested in computer science. Additionally, ACM-W endeavors to increase all aspects of diversity in the technical field by providing a range of technical and social programs and services to UCLA students.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Social Media:
+
+Signatory 1:
+
+Ria Kundu
+
+Signatory 2:
+
+SANANSHI PIDYAR
+
+Signatory 3:
+
+LARRY ZHI
+
+Advisor:
+
+ORLANDO LUNA
+
+Biokind Analytics at UCLA
+
+Biokind Analytics at UCLA is a data science organization that provides data analytics and statistical modeling services to healthcare nonprofits in the Los Angeles area. Currently, many nonprofits have the tools to collect data, but do not have resources to take advantage of the data. To address this, we utilize data to lower costs, improve efficiency, predict future needs, and answer any questions the nonprofits have about their services. We offer patient, donor, and event-specific analyses. Members will gain hands-on experience working with leaders in the healthcare nonprofit sector and help them boost their impact.
+
+Category:
+
+Medical, Technology
+
+Email:
+
+Social Media:
+
+Signatory 1:
+
+CHRISTINE SHEN
+
+Signatory 2:
+
+SHAINA WANG
+
+Signatory 3:
+
+CADEN CHOW
+
+Advisor:
+
+ORLANDO LUNA
+
+Blockchain at UCLA
+
+Blockchain at UCLA is the university’s student-run blockchain community, composed of UCLA engineering, science and humanities students and faculty.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+JASON HUAN
+
+Signatory 2:
+
+DHRUV PAREEK
+
+Signatory 3:
+
+ADITYA NAGACHANDRA
+
+Advisor:
+
+MIRANDA REDMAN
+
+Bruin AI
+
+Bruin AI is the premier everything AI Club and community at UCLA. We are a group of AI enthusiasts striving to build a prestigious AI community on campus to teach AI and tech learning to contribute to a better and safer UCLA Campus and Beyond. At Bruin AI, our mission is to: - Create and grow a community for AI and Tech enthusiasts at UCLA. - Explore, learn, and apply AI and Technology to our professional and personal lives, making UCLA a hub for AI knowledge and innovation. Joining Bruin AI offers a multi-faceted experience that extends beyond typical club participation: Leadership: Take the opportunity to influence and mold the AI culture at UCLA. Members contribute to ongoing initiatives and get a platform to introduce new ideas, strategies, and projects that can redefine how AI is perceived and integrated on campus. Networking: Gain access to a network of industry professionals, alumni, and researchers. Attend exclusive events, workshops, and conferences that provide opportunities for internships, collaborations, and even future employment. Skill Enhancement: Beyond AI, develop critical soft skills like teamwork, public speaking, and project management. Benefit from mentorship opportunities and feedback sessions that focus on your holistic development. Innovation & Creativity: At Bruin AI, we celebrate innovation. Work on cutting-edge projects, experiment with new ideas, and be at the helm of creating solutions that could be the next big thing in AI. Campus Involvement: Engage actively with the broader UCLA community. This involvement not only strengthens our club's ties with various faculties and student groups but also reinforces our commitment to making AI an integral part of UCLA's academic and extracurricular fabric. Exclusive perks for our valued members AI Training Program Elevate your AI skills through our comprehensive training program Exclusive Workshops Expand your knowledge through our exclusive workshops Professional Networking Connect with industry trained AI professionals in the field Mentorship Programs Harness the power of AI mentorship and learn lifelong lessons AI Resources Personalize your AI journey to suit your needs the best AI Projects Explore innovative applications of AI to solve real-world challenges
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+ASHITA SINGH
+
+Signatory 2:
+
+JAKOB JOHANNES BOEDKER JENSEN
+
+Signatory 3:
+
+SATYAJIT KUMAR
+
+Advisor:
+
+ORLANDO LUNA
+
+Bruin Crypto Investment
+
+Bruin Crypto Investment is UCLA's premier real-money crypto investment club run entirely by UCLA undergraduate students. We blend in macroeconomic and technical analyses to share applicable skills for generating uncorrelated returns. By investing in various cryptocurrencies and index funds, we help students develop a clear understanding of blockchain, individualized investment principles, and the discipline for smart market development tracking.
+
+Category:
+
+Business, Technology
+
+Email:
+
+Signatory 1:
+
+YOHAN HONG
+
+Signatory 2:
+
+DIANE ZHANG
+
+Signatory 3:
+
+STANISLAV OFITSEROV
+
+Advisor:
+
+DARWIN FLORES AGUSTIN
+
+Bruin Formula Racing
+
+Bruin Formula Racing was created with the goal of giving engineering students the opportunity to apply classroom knowledge in a practical team environment. Members will design, build, and test a formula-style car and compete against teams from other universities.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+DONALD CLARKE
+
+Signatory 2:
+
+OLIVIA PILSON
+
+Signatory 3:
+
+Jenna Lacuata
+
+Advisor:
+
+ORLANDO LUNA
+
+Bruin Machine Learning & Analytics
+
+Bruin Machine Learning & Analytics (BMLA) is a project-based student organization that emphasizes the use of data-driven processes to understand, solve, and share our solutions to real-world problems. We are defined by our two teams, Analytics and Machine Learning, which work together to illustrate the story of the data and derive unique insights. Through this approach, our members further their proficiency in data science, develop collaborative skills, and acquire valuable domain knowledge, successfully preparing them for futures across the industry and academia.
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Signatory 1:
+
+ZACHARY SMITH
+
+Signatory 2:
+
+AARYA KHANNA
+
+Signatory 3:
+
+JACK GAITLEY
+
+Advisor:
+
+ORLANDO LUNA
+
+Bruin Quant Traders
+
+Bruin Quant Traders is UCLA’s premier quantitative finance club focusing on building a strong community of students passionate about the use of quantitative trading, investing, and risk management. We welcome individuals from all academic backgrounds, especially those interested in mathematics, computer science, finance, and statistics. Bruin Quant Traders aims to support members in advancing their academic and professional careers through a variety of initiatives, including workshops, networking opportunities, and collaborative projects.
+
+Category:
+
+Technology, Business
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+ANIS MUSTAPHA-SABBATINI
+
+Signatory 2:
+
+LANDON MULFORD
+
+Signatory 3:
+
+PRANAV SREERAM
+
+Advisor:
+
+ORLANDO LUNA
+
+Bruin Spacecraft Group
+
+BruinSpace has been founded with the intent of providing a creative and supportive environment for space mission design and development at UCLA. Bruin Space seeks to expand, support, and promote space-related student projects at UCLA, including, but not limited to, nanosatellites, CubeSats, sounding rocket payloads, and high altitude balloons.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+JENNA PARKER
+
+Signatory 2:
+
+ALEXANDER HARTMAN
+
+Signatory 3:
+
+NASSER ALSOWYAN
+
+Advisor:
+
+ORLANDO LUNA
+
+Bruin Sports Analytics
+
+A student run sports statistics organization which serves as a platform for sports research, data journalism, consulting, and machine learning applications. Bruin Sports Analytics is the only club at UCLA where you can actively practice your data science skills throughout the year. Through professional development opportunities and hands on applications, we aim to prepare our members for a successful career in the sports analytics industry.
+
+Category:
+
+Technology, Sports
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+DANIEL WANG
+
+Signatory 2:
+
+STEVEN CHEN
+
+Signatory 3:
+
+ABHINAV MADABHUSHI
+
+Advisor:
+
+MIRANDA REDMAN
+
+Bruin Ventures
+
+We are UCLA’s premier venture capital organization dedicated to introducing UCLA’s brightest students to venture capital, entrepreneurship and startup culture through a rigorous training quarter, inspiring guest speakers, consulting projects with LA’s leading venture capital firms, and collaborations with startups. Our goal within UCLA is to establish a community that inspires startup culture and sparks talent to pursue innovative ventures. Our club’s greatest strength lies in our diversity. As one of the only organizations at UCLA that combines students from business, engineering, and liberal arts, we are uniquely suited to explore startups in a variety of ways. Since the organization has started, sixty analysts have gone through rigorous training to be able to assess startups both qualitatively and quantitatively. This is only the beginning, and we are excited to grow our talent pool through our fall recruitment cycle. Our comprehensive program successfully develops a passion for venture capital in our students, while preparing them to obtain internships and full-time jobs in the field, inspiring to be the movers and shakers of our generation. Every year, Bruin Ventures carefully accepts ~15 analysts from hundreds of applications. Each accepted individual has the qualities necessary to be an integral member in the growth of our club and has a passion to learn and to grow. Becoming a member of BV is an exciting time and is a hands-on learning experience that cannot be matched in the classroom.
+
+Category:
+
+Business, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+ISABELLA SIEGEL
+
+Signatory 2:
+
+ANIKA BALAKRISHNAN
+
+Signatory 3:
+
+ISHAN VANJARA
+
+Advisor:
+
+MIRANDA REDMAN
+
+CAIR Collective
+
+The CAIR (Clinical Artificial Intelligence Research) Collective is a community for students interested in learning about and contributing to the intersection between healthcare and artificial intelligence. Members are provided with the resources and environment suited for building products and solutions for healthcare issues, using artificial intelligence and machine learning. Students with any interest/background in machine learning, product development, healthcare, or the medical field are encouraged to join!
+
+Category:
+
+Technology, Medical
+
+Email:
+
+Social Media:
+
+Signatory 1:
+
+JAIDEN HA
+
+Signatory 2:
+
+BRYAN YU
+
+Signatory 3:
+
+ALFRED MASTAN
+
+Advisor:
+
+DARWIN FLORES AGUSTIN
+
+ColorStack at UCLA
+
+Largest national community of Black and Latinx college students pursing Software Engineering and Development
+
+Category:
+
+Technology, Career Planning
+
+Email:
+
+Social Media:
+
+Signatory 1:
+
+CONSTINE JACK
+
+Signatory 2:
+
+ELIJAH WILLIS
+
+Signatory 3:
+
+ISAIAH MILLS-TERRY
+
+Advisor:
+
+HARPREET LALLY
+
+Computational Biologists Society
+
+The Computational Biologists Society is a student organization which aims to connect students from computational biology and related fields, to provide resources and guidance to students in the Computational and Systems Biology department, and to provide opportunities for education, networking, and professional development.
+
+Category:
+
+Technology, Academic
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+SUNLAN LU
+
+Signatory 2:
+
+BEN HSIEH
+
+Signatory 3:
+
+PRAVEENA RATNAVEL
+
+Advisor:
+
+ORLANDO LUNA
+
+Creative Labs UCLA
+
+We are a community of UCLA creatives working on cool projects to discover even cooler passions. We foster creativity and passion within the student body and help students bring their creative project ideas to life. From mobile apps and websites to biodegradable apparel and robotics, students are able to propose their project idea and work with us and our resources in order to successfully execute their creativity.
+
+Category:
+
+Technology, Academic
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+COLEMAN LEUNG
+
+Signatory 2:
+
+TEJ THAMBI
+
+Signatory 3:
+
+APARNA HARIHARAN
+
+Advisor:
+
+MIRANDA REDMAN
+
+CruX @ UCLA
+
+As a student-led neurotechnology club, CruX strives to raise student awareness and interest in the emerging neurotech industry as well as provide students with opportunities to foster and develop essential skills to advance this complex field. We aim to equip students with the knowledge, skills, equipment, and connections they need to contribute to the growing field of neurotech through workshops, student-run BCI projects, and guest speaker events.
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+AYESHA MIRZA
+
+Signatory 2:
+
+KAITLYN CALLO
+
+Signatory 3:
+
+ETHAN NGUYEN
+
+Advisor:
+
+KRISTOPHER KAUPALOLO
+
+Cyber
+
+Our mission is to create a community in which both experts and beginners alike can grow in the field of cybersecurity skills and knowledge. We want to make cybersecurity simple and accessible for everyone.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+Joshua Zhu
+
+Signatory 2:
+
+ALEC MACHLIS
+
+Signatory 3:
+
+ANDREW KUAI
+
+Advisor:
+
+ORLANDO LUNA
+
+DataRes at UCLA
+
+DataRes is the first and largest data science organization at UCLA. Our mission is to cultivate a growing community of aspiring data scientists through project work and gaining experience in R, Python, SQL, Tableau, analytics, machine learning, client work, and more. Our five teams are DataLearn, Data Blog, Research, Consulting, and DataTeach. Please follow our socials (https://linktr.ee/ucladatares) for the most up-to-date information on recruitment and events!
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+DANIEL WANG
+
+Signatory 2:
+
+DEREK SHI
+
+Signatory 3:
+
+JESSICA YAO
+
+Advisor:
+
+ORLANDO LUNA
+
+DAW
+
+DAW (Digital Audio Workspace) is a music technology organization committed to providing a collaborative space built on values of support and community. Our goal is to bring together a diverse group of students passionate about celebrating musicians and artists at and around UCLA. We offer frequent social programming and community events, as well as opportunities to learn about and collaborate on electronic music.
+
+Category:
+
+Music, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+EMILY HADDAD
+
+Signatory 2:
+
+BROOKE ORTIZ
+
+Signatory 3:
+
+MAXWELL GAILEY
+
+Advisor:
+
+PAMELA CYSNER
+
+DevX
+
+DevX is UCLA's premier software project club, where we help to form and guide student-led software projects in improving the livelihoods of their fellow bruins. We pride ourselves on our usage of real-world applications of development practices, giving our members valuable experiences that directly translate to skills in the industry.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+BRANDON DAY
+
+Signatory 2:
+
+DARLINA WILLIAMS
+
+Signatory 3:
+
+ANDREW CRUZ
+
+Advisor:
+
+ORLANDO LUNA
+
+exploretech.la
+
+exploretech.la is a student organization that hosts an annual event aimed at encouraging & inspiring local high school students to pursue possibilities in computer science, engineering, and technology. Through a day filled with exciting workshops, engaging panels, and a variety of student and industry booths, we hope to empower students with the ability to explore the diverse fields of STEM. Any UCLA student is welcome to join exploretech.la! All majors are welcome, and no prior engineering experience is required.
+
+Category:
+
+Technology, Service - Outreach
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+MICHAEL SONG
+
+Signatory 2:
+
+MEGHA RAVI
+
+Signatory 3:
+
+AMANDA CHAN
+
+Advisor:
+
+MARIA ANNA CAPINPIN
+
+Fighting Game Community at UCLA
+
+A community dedicated to sharing and cultivating interest in the video game genre of fighting games. Meetups, tournaments, and socials are held every week. We play a vast variety of fighting games, ranging from Street Fighter, Guilty Gear, Tekken, Mortal Kombat, and more!
+
+Category:
+
+Social, Technology
+
+Email:
+
+Social Media:
+
+Signatory 1:
+
+RONAK HEGDE
+
+Signatory 2:
+
+BENJAMIN SATO
+
+Signatory 3:
+
+HARMONY HSU
+
+Advisor:
+
+MIRANDA REDMAN
+
+Game Dev Studio
+
+Game Dev Studio, a subcommittee of UCLA’s Association of Computing Machinery (ACM), is the university’s primary game development club. We offer a collaborative and inclusive environment for students of all skill levels to explore game creation, covering everything from programming and design to storytelling, audio, and art. Through hands-on projects, workshops, and fast-paced game jams, we provide members with practical experience and opportunities to develop key skills in a supportive community. Our flagship program allows students to work in teams and bring original game ideas to life, while our speaker events and industry connections help bridge the gap between academia and professional careers. Whether you're a beginner or experienced developer, Game Dev Studio is where UCLA students turn their passion for games into real-world experience.
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+JOANNA LIU
+
+Signatory 2:
+
+AARON KWAN
+
+Signatory 3:
+
+LARRY ZHI
+
+Advisor:
+
+PAMELA CYSNER
+
+GenAI @ UCLA
+
+1\. Leading hands-on projects that empower members to build generative AI products to help automating tasks for UCLA organizations and individuals. 2. Educating students on the building blocks of current generative AI technologies, including embeddings, vector databases, graph databases, and more. 3. Sharing insights on the latest AI agent products and providing training on how to effectively use these cutting-edge tools.
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Website:
+
+Signatory 1:
+
+WANXIN XIAO
+
+Signatory 2:
+
+YIJIA XIAO
+
+Signatory 3:
+
+RAFFI SIMONIAN
+
+Advisor:
+
+ORLANDO LUNA
+
+Genshin Impact at UCLA
+
+Genshin Impact is an ARPG with a gacha system. The club here at UCLA is a sub-group of BruinGG. We have some social events as well as some events on the hill, but our main method of communication is through Discord. We discuss topics not only limited to the game but expands upon other games and other academic and non-academic activities.
+
+Category:
+
+Social, Technology
+
+Email:
+
+Website:
+
+Signatory 1:
+
+LUNE CHAN
+
+Signatory 2:
+
+DANTHANH TONNU
+
+Signatory 3:
+
+ANDY FUNG
+
+Advisor:
+
+ARANZA GUZMAN
+
+Girls Who Code @ UCLA
+
+Girls Who Code College Loop at UCLA is a supportive, empowering community for women and non-binary students interested in technology, coding, and innovation. Our chapter focuses on building technical skills, professional development, mentorship opportunities, and lifelong friendships through workshops, speaker events, hackathons, socials, and collaborations with the larger Girls Who Code network. Whether you're just starting out or an experienced coder, you’ll find a space here to grow, lead, and thrive in tech — all while making lasting connections with other Bruins passionate about closing the gender gap in STEM!
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Signatory 1:
+
+SHAINA GROVER
+
+Signatory 2:
+
+RIDHIMA CHOWDARY MORAMPUDI
+
+Signatory 3:
+
+DIKSHA JAIN
+
+Advisor:
+
+DARWIN FLORES AGUSTIN
+
+GLITCH
+
+GLITCH is a club dedicated to training students to be able to build projects quickly and compete at hackathons. From beginner-friendly workshops covering frontend, backend, and AI to fully funded trips to top hackathons for our best hackers, GLITCH is where you take your tech skills to the next level. While our main focus is competing in hackathons, we support miscellaneous projects throughout the year, with no set start or end time and no set team. Enjoy flexible project support, build your resume with impressive creations, and even get help launching your own startup with our investor connections. No interviews, no restrictions, just open doors to opportunity.
+
+Category:
+
+Technology, Educational
+
+Email:
+
+Signatory 1:
+
+JONATHAN OUYANG
+
+Signatory 2:
+
+ERIC ZHOU
+
+Signatory 3:
+
+SUNNY VINAY
+
+Advisor:
+
+ORLANDO LUNA
+
+Hack at UCLA
+
+Our mission is to help students build amazing things and encourage them to explore the limits of what is possible through code. We want to make coding accessible to absolute beginners of all majors. We host workshops and courses that teach students how to build things like websites and mobile apps.
+
+Category:
+
+Technology, Educational
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+NATHAN ZHANG
+
+Signatory 2:
+
+SHIYU YE
+
+Signatory 3:
+
+JENNA WANG
+
+Advisor:
+
+ORLANDO LUNA
+
+High-tech and Neurological-Disorders (HAND)
+
+High-tech and Neuro-Disorders (HAND) is a non-profit organization at UCLA aiming to increase awareness and education of neurological diseases, including movement disorders such as Parkinson’s disease, and to build a community of students interested in neuroscience and biotechnology. HAND events include hosting speakers such as medical professionals and industry leaders, facilitating journal clubs to discuss recent research, and contributing to online outreach opportunities. This year, HAND will be guiding members in shadowing physicians at the UCLA Movement Disorders Program and aiding those interested to seek research positions in neuroscience laboratories. Additionally, members can choose to be part of the HAND Innovation Team, which will be an ongoing project to develop a prototype for and market the Parkinson's device patent by our President. We welcome all UCLA students passionate about neuroscience and cutting-edge technology, as well as those in the business and marketing fields, interested in biotechnology and entrepreneurship.
+
+Category:
+
+Medical, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+ISHAN MISRO
+
+Signatory 2:
+
+KONMAL ALI
+
+Signatory 3:
+
+ANUBHAV CHANDLA
+
+Advisor:
+
+ORLANDO LUNA
+
+IEEE - WIE
+
+Our organization aims to create a supportive community for female and minority engineering students by promoting mentorship, retention, social justice, and outreach. We are commonly referred to as IEEE WATT on campus.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+EUGENIA CHO
+
+Signatory 2:
+
+CHRISTINE YANG
+
+Signatory 3:
+
+SAACHI BHAYANI
+
+Advisor:
+
+ORLANDO LUNA
+
+IEEE at UCLA
+
+Our award winning student branch here at UCLA was founded in 1963. We have devoted our energies towards bringing hands-on, practical experiences to engineering students throughout the campus, as well as creating opportunities for the students to interact with industry professionals, develop their professional skills and more.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+Sanjit Sarda
+
+Signatory 2:
+
+EVAN BIRD
+
+Signatory 3:
+
+Aki Subramaniam
+
+Advisor:
+
+ORLANDO LUNA
+
+InnoMed
+
+InnoMed is a student-driven organization focused on developing innovative technology solutions to address critical medical challenges. By uniting students from fields like biology, engineering, computer science, and business, we foster interdisciplinary collaboration to create real-world healthcare innovations. Our mission is to identify pressing medical problems, engage with industry professionals, and develop cutting-edge solutions in areas such as biotechnology, AI, and data science. InnoMed emphasizes hands-on learning, where students can prototype and test their ideas in practical environments, while also collaborating with local hospitals and startups. We not only provide educational workshops and networking opportunities but also support students in turning their startup ideas into viable ventures. Through participation in hackathons and med tech competitions, members gain exposure, funding, and mentorship, empowering them to launch their innovations and drive meaningful impact in healthcare. InnoMed also serves as an incubator for students with entrepreneurial aspirations in the medical technology space. We actively support members who are interested in transforming their innovative ideas into startups by offering resources such as mentorship from industry experts, access to seed funding, and guidance through the stages of product development and commercialization. Our organization fosters an environment where creativity and business acumen come together, helping students navigate the challenges of launching a medical technology company. By connecting aspiring entrepreneurs with investors and venture capital networks, InnoMed empowers students to not only innovate but to create sustainable ventures that have the potential to revolutionize healthcare. With a commitment to advancing the future of medicine, InnoMed provides a platform for students to collaborate, innovate, and transform their ideas into impactful solutions that improve patient outcomes and address real-world medical needs. We strive to build a community of forward-thinking individuals dedicated to driving progress in healthcare through the power of technology and entrepreneurship.
+
+Category:
+
+Medical, Technology
+
+Email:
+
+Signatory 1:
+
+ELIAS LAI
+
+Signatory 2:
+
+LIFU GUO
+
+Signatory 3:
+
+REGINA LIU
+
+Advisor:
+
+PAMELA CYSNER
+
+Innovative Design at UCLA
+
+Innovative Design is a student-run creative agency focused on building community, fostering professional development, and serving local organizations. We are a community of graphic and web designers, photographers, and marketers utilizing our skills to support other student organizations and real-world clients on their projects.
+
+Category:
+
+Arts, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+LAWRENCE LEE
+
+Signatory 2:
+
+LINA LEE
+
+Signatory 3:
+
+DANIEL OGURA
+
+Advisor:
+
+ARANZA GUZMAN
+
+LA Blueprint
+
+Blueprint strives to make technology accessible and useful for those who create communities and promote public welfare. We seek to work with nonprofits throughout the school year to deliver a mobile/web application for the greater social good. Through Blueprint, members will build professional and social skills while contributing to their community.
+
+Category:
+
+Technology, Service
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+ANGELA HAO
+
+Signatory 2:
+
+ANGELA LING
+
+Signatory 3:
+
+JEFF LU
+
+Advisor:
+
+MARIA ANNA CAPINPIN
+
+LA Hacks
+
+LA Hacks is a student-run organization that brings students from around the world together to build creative and innovative solutions to the world's most pressing issues. Our mission is to foster a community of technical and artistic talent through collaborative projects and product development.
+
+Category:
+
+Technology, Academic
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+PRIYANSHU SHARMA
+
+Signatory 2:
+
+ALLISON HUANG
+
+Signatory 3:
+
+KATHY PHAM
+
+Advisor:
+
+MARIA ANNA CAPINPIN
+
+Law and Blockchain Association
+
+The Law and Blockchain Association at UCLA School of Law provides students interested in blockchain technology opportunities to explore careers in the blockchain field and become involved in related scholarship. Throughout the year, the Law and Blockchain Association hosts engaging events to help UCLA Law students connect with attorneys, professors, venture partners, and startups within the blockchain ecosystem.
+
+Category:
+
+Law, Technology
+
+Email:
+
+Signatory 1:
+
+ADITYA SIVAKUMAR
+
+Signatory 2:
+
+EDWARD YU
+
+Signatory 3:
+
+ROHAN GANDHI
+
+Advisor:
+
+KRISTOPHER KAUPALOLO
+
+Linux Users Group
+
+The Linux Users Group at UCLA (LUG@UCLA) is a student run group of GNU/Linux advocates and users. We provide a support network for Linux users by offering help with Linux, hosting Linux related events, and offering several computing services. Most information about what LUG does can be found on the wiki. Non-Linux users are welcome too! No experience is necessary to join, and there is no application or interview process.
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Website:
+
+Signatory 1:
+
+JAMES SHIFFER
+
+Signatory 2:
+
+LAWRENCE LIU
+
+Signatory 3:
+
+ETHAN CHENG
+
+Advisor:
+
+MIRANDA REDMAN
+
+MedTech Innovation (MTI)
+
+The MedTech Innovation club aims to bring together the worlds of health and technology to create new ways to care for patients. It's focused on using things like wearable tech, artificial intelligence (AI), and data analysis to change how we monitor health and treat illnesses. Club members get hands-on with the latest technological inventions, striving to make medical care more accurate, efficient, and personalized by using AI and gadgets that track health in real time. This means trying to start a new phase in medicine where treatments and prevention methods are designed for each person's unique needs. In addition to working on tech projects, the club also gets involved in the community by holding workshops and talks. These events connect tech fans with health experts, sharing and comparing knowledge and ideas and promoting a collaborative learning environment. The club's goal is to provide a great learning space for its members and to get the whole community excited about how tech can change health care for the better. By doing this, the club hopes to help create a future where technology plays a key role in improving health and well-being.
+
+Category:
+
+Medical, Technology
+
+Email:
+
+Signatory 1:
+
+ARYA NAEIM
+
+Signatory 2:
+
+JADEN PENHASKASHI
+
+Signatory 3:
+
+JOSHUA GOLSHIRAZI
+
+Advisor:
+
+ORLANDO LUNA
+
+National Student Data Corps at UCLA
+
+NSDC @ UCLA provides a platform for students to learn data science/machine learning, connect with like-minded people, and explore possible data-related careers. We believe that there is currently a lack of data science resources and opportunities at UCLA for students new to the field; the existing data science clubs at UCLA are competitive and bar less experienced students from getting the resources they need. NSDC @ UCLA aims to bridge this gap by hosting projects, workshops, lectures, and community events catered toward newer students while also equipping more experienced students with career and developmental opportunities.
+
+Category:
+
+Academic, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+ANIKA MISRA
+
+Signatory 2:
+
+MILLA NIELSEN
+
+Signatory 3:
+
+ELIZABETH WILLSON
+
+Advisor:
+
+ORLANDO LUNA
+
+ProductSpace at UCLA
+
+Product Space at UCLA is a premier product-centric club which offers a fellowship program to up-skill students in the fields of Product Management, Product Marketing, and Product Design. The club offers hands-on training and workshop to help cultivate industry relevant skills. Through mentorship, recruitment preparation, as well as real professional client projects, Product Space hopes to serve as a launchpad for enthusiastic students who wish to enter tech teams across the globe.
+
+Category:
+
+Technology, Educational
+
+Email:
+
+Signatory 1:
+
+MATTHEW CROSS
+
+Signatory 2:
+
+MICHELLE LIU
+
+Signatory 3:
+
+ROHAN AGARWAL
+
+Advisor:
+
+MARIA ANNA CAPINPIN
+
+Rocket Project at UCLA
+
+Rocket Project at UCLA is a student engineering team that teaches rocket engineering through hands-on exposure to the complete design-build-test cycle of engineering, giving students an opportunity to apply classroom subjects to a project with real-world challenges and thrilling results. Throughout our endeavors, we strive to promote inclusivity and diversity by structuring internal educational pathways to make even the most complex problems approachable and by carrying out community outreach programs dedicated to inspiring the next generation of rocket engineers from all walks of life. Linked is our interest form; if you're a current or incoming UCLA student who's dedicated and has a passion for engineering, fill out the form so that we can send you important information on joining the team. See you there! https://forms.gle/Nm3cH7vkwm5HJ4SK9
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+MYRSINI SAN MARCHI
+
+Signatory 2:
+
+DOAN LE
+
+Signatory 3:
+
+JUAN PEREZ
+
+Advisor:
+
+ORLANDO LUNA
+
+Science Policy Group at UCLA
+
+A group of students dedicated to pursuing advocacy through evidence and science. We partake in visits to state assembly members in the area, hold general meetings to discuss relevant topics, and invite guest speakers/lecturers.
+
+Category:
+
+Social Activism, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+Chloe Hanson
+
+Signatory 2:
+
+ERIN MORROW
+
+Signatory 3:
+
+KEATON BARR
+
+Advisor:
+
+MIRANDA REDMAN
+
+Science, Technology, Engineering, Arts, and Math at UCLA (STEAM@UCLA)
+
+The purpose of Science, Technology, Engineering, Arts, and Math at UCLA (STEAM@UCLA) is to promote exposure and education across the STEAM (Science, Technology, Engineering, Arts, and Math) fields through student-led movement. We shall encourage collaboration and creativity through methodological implementations of team projects. We shall also promote interest on various STEAM-related branches such as Computer Science, Engineering, and Design. This club aims to promote problem-solving analysis in order to apply to real-life projects that affect the greater community.
+
+Category:
+
+Technology, Educational
+
+Email:
+
+Website:
+
+Signatory 1:
+
+AARON LIU
+
+Signatory 2:
+
+JOSEPH CASTANEDA
+
+Signatory 3:
+
+JOHN TALBERT
+
+Advisor:
+
+PAMELA CYSNER
+
+Sneakerheads at UCLA
+
+Sneakerheads at UCLA will be a vibrant community dedicated to celebrating the culture, creativity, and history of sneakers. This club brings together individuals who share a passion for sneakers, whether as designers, resellers, or enthusiasts captivated by their impact on fashion and everyday style. The club will serve as a hub for discussion and collaboration, with a focus on the sneaker market, trading, authentication, streetwear culture. Members will gain valuable insights into authenticating pairs, navigating the resale world, and understanding trade values. The club will also create opportunities for members to engage directly with the sneaker community through events like sneaker meetups, where they can trade shoes and foster connections with other sneaker enthusiasts Additionally, Sneakerheads at UCLA will strive to engage in philanthropic initiatives, such as sneaker donation drives, sustainability efforts, and community outreach programs, reflecting the club’s commitment to giving back and making a difference. At its core, Sneakerheads at UCLA will serve as a space to explore sneaker culture and its intersection with streetwear trends, with an emphasis on the dynamic sneaker market. By fostering an environment that celebrates individuality and shared enthusiasm, the club will inspire its members to see sneakers for more than their retail price. By bonding over SNKRS app W’s, Sneaker-heads will call this club home.
+
+Category:
+
+Social, Technology
+
+Email:
+
+Signatory 1:
+
+KEVIN DOAN
+
+Signatory 2:
+
+ALAN KUO
+
+Signatory 3:
+
+WENXUAN XIAO
+
+Advisor:
+
+ARANZA GUZMAN
+
+Software Engineering at UCLA
+
+A community for builders and innovators who love turning ideas into real, impactful projects. By working with the latest industry tech stacks, members gain hands-on experience while creating software that solves real-world problems. Beyond just building, the focus is on staying up to date with tech trends, discussing new advancements, and sharing insights. Projects don’t just stop at completion—ongoing support and recognition help them grow, especially when they make a real impact. Whether it's through recurring users, high engagement, or meaningful contributions, great work is always celebrated. Feel free to reach out if you have any interest in software and technology.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Social Media:
+
+Signatory 1:
+
+ISHAAN SARASWAT
+
+Signatory 2:
+
+KAARTIK TEJWANI
+
+Signatory 3:
+
+SHERAZ FAYYAZ
+
+Advisor:
+
+DARWIN FLORES AGUSTIN
+
+SOLIDWORKS User Group
+
+We aim to communicate information about everything related to SOLIDWORKS to UCLA students, including information about student licenses, the SOLIDWORKS Certification Program, internship opportunities, local SOLIDWORKS User Group Network events, and more. We host workshops to teach necessary skills as well as collaborate with various organizations on campus to provide SOLIDWORKS training programs. Check out our website at https://westwoodswug.github.io/ to learn more!
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+SURAJ SHAH
+
+Signatory 2:
+
+ASHLEY JUAREZ
+
+Signatory 3:
+
+ISABEL CATALANO
+
+Advisor:
+
+MIRANDA REDMAN
+
+Tech Innovators - Becoming Global Students Association
+
+Becoming Global Students Association (BGSA) is a global student community that connects members from 50+ universities worldwide, including UCLA, UC Berkeley, Stanford, MIT, Brown, Oxford, and Cambridge. The Tech Innovators is a branch of BGSA at UCLA, aiming to empower students who are passionate about using technology to solve global issues. We provide a unique platform where forward-thinkers and problem-solvers come together to explore the intersection of technology, innovation, and global impact. Through workshops, distinguished speaker series, and collaborative projects, we hope to cultivate a community not only to exchange essential skills and knowledge but also to create a global network of future tech leaders. We envision a world where technology acts as a bridge between cultures, enhancing global collaboration and understanding.
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Social Media:
+
+Signatory 1:
+
+YUE YU
+
+Signatory 2:
+
+YIMING REN
+
+Signatory 3:
+
+ERIC SONG
+
+Advisor:
+
+ORLANDO LUNA
+
+TechUp at UCLA
+
+TechUp at UCLA is a student-run organization with the sole mission of the advocacy of technology literacy within the local community. It is an extension of a local non-profit, TechUp Los Angeles. Since the COVID-19 pandemic, we have been forced to shift to remote working and video meetings that require some tech literacy skills. Yet, people experiencing homelessness may not have access to the technology needed to grow these skills. Given the existing hardships and disadvantages in the job market, learning tech literacy skills would help increase the amount and types of jobs this population can apply for. This can also be applied to other populations that struggle with tech literacy skills such as people from low income areas, elderly adults, and those who are returning from incarceration. While growing in tech literacy cannot knock down every barrier, having basic tech literacy skills brings us one step closer to an inclusive job market. Today, TechUp LA has partnered with seven local organizations throughout LA County where we provide monthly workshops to individuals on the basics of smartphones and computers. Thus, TechUp at UCLA hopes to amplify TechUp LA’s mission at UCLA and offer volunteer opportunities to current students to knock down technology barriers for underserved communities together.
+
+Category:
+
+Service - Outreach, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+ARCTAVIA LI
+
+Signatory 2:
+
+ANDY NGUYEN
+
+Signatory 3:
+
+YONGBAI XIAO
+
+Advisor:
+
+ORLANDO LUNA
+
+The Data Science Union
+
+The Data Science Union is a student-led organization founded in March 2019. Our goal is to cultivate a thriving community of tight-knit data science professionals by bringing together those who share an interest in data science. The four components of our club — our self-designed curriculum, real-world projects, professional development opportunities, and focus on community — prepare members for futures in data science.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+Clare Kim
+
+Signatory 2:
+
+JUSTIN GONG
+
+Signatory 3:
+
+Jacob Bianchi
+
+Advisor:
+
+MARIA ANNA CAPINPIN
+
+Ultrasound Interest Group (USIG)
+
+The goal of the Ultrasound Interest Group (USIG) is to provide opportunities for medical students to receive a more expansive education in ultrasound that they can use during their medical training as well as their careers. Ultrasound is non-invasive, low cost imaging technique that when used appropriately has a high diagnostic power for many common conditions. As medicine moves to reduce unnecessary imaging studies and use safer and more cost effective imaging techniques, clinician performed and generalist ultrasound is becoming increasingly advocated.
+
+Category:
+
+Medical, Technology
+
+Email:
+
+Website:
+
+Signatory 1:
+
+TEREZA VITKOVSKA
+
+Signatory 2:
+
+ALEXANDER FISH
+
+Signatory 3:
+
+ANDRE NAGUIB GUIRGUIS
+
+Advisor:
+
+PAMELA CYSNER
+
+Uncrewed Aerial Systems at UCLA (UAS@UCLA)
+
+Uncrewed Aerial Systems is all about designing aerial robots. Specifically, our team of UCLA students designs, manufactures, and tests custom drones for accomplishing a series of mission objectives, for various research and competition purposes. UAS@UCLA complements the undergraduate engineering education at UCLA by offering the chance to gain hands-on experience on a complex engineering project. This project requires members to not only think outside the box of their major, but also learn collaboration and management skills through experience. Ultimately, UAS@UCLA is a big commitment, but the skills that are taught on the team directly apply to the professional environments you will experience in later jobs and internships. Finally, UAS@UCLA is a family, and the connections you make on the team can not only serve to further your professional career, but also give you support during and beyond your time in the undergraduate programs offered at UCLA. One of the main goals is to grow our club's culture and attract not only the best engineers to join our program, but also develop a diversified team with extensive collaboration opportunities among other teams at UCLA and internal career resources for leading members into their dream internship/job position in the STEM fields.
+
+Category:
+
+Engineering, Technology
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+JOHN NITSOS
+
+Signatory 2:
+
+KUSH HANSKUMAR AGARWAL
+
+Signatory 3:
+
+NATHAN CHAN
+
+Advisor:
+
+ORLANDO LUNA
+
+VEST at UCLA
+
+VEST promotes venture creation, entrepreneurial initiatives, startup development, and technological innovation within the university community. Our club focuses on working with startup companies to create products that those companies can utilize. Our club partners up with startup companies for volunteer experience for our members. We promote student initiative in their careers by giving them job experience to prepare them for the workforce.
+
+Category:
+
+Technology, Engineering
+
+Email:
+
+Website:
+
+Social Media:
+
+Signatory 1:
+
+JAKOB PADILLA
+
+Signatory 2:
+
+KYLE JEONG
+
+Signatory 3:
+
+ANTHONY ASNARAN
+
+Advisor:
+
+ORLANDO LUNA
+

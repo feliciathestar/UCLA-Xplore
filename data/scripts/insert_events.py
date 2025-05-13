@@ -5,12 +5,11 @@ import psycopg2
 from datetime import datetime
 
 # Load the Excel file
-file_path = "/Users/wanxinxiao/Desktop/UCLA-Xplore/data/raw/events_calendar/w07_processed.xlsx"  # Update the path if necessary
+file_path = "/Users/wanxinxiao/Desktop/UCLA-Xplore/data/scripts/insert_events.py"  # Update the path if necessary
 df = pd.read_excel(file_path)
 
 
 ###### for connecting to postgres locally ######
-
 # PostgreSQL connection details
 DB_NAME = "event_scheduler"
 DB_USER = "your_username"

@@ -5,7 +5,7 @@ import re
 from datetime import datetime, date, timedelta
 
 # assign data to be processed (a week in a quarter)
-file_path= "raw/events_calendar/w08.txt"
+file_path= "raw/events_calendar/s07.txt"
 
 def convert_time(time_str, all_day, is_start_time=False):
     """Convert time to PostgreSQL format
@@ -168,7 +168,7 @@ def classify_and_save_w07(path_to_raw, path_example_columns, output_path):
     print(f"Processed data saved to {output_path}")
 
 
-path_to_raw = "/Users/wanxinxiao/Desktop/UCLA-Xplore/data/raw/events_calendar/w07.txt"
+path_to_raw = "/Users/wanxinxiao/Desktop/UCLA-Xplore/data/raw/events_calendar/s07.txt"
 path_example_columns = "/Users/wanxinxiao/Desktop/UCLA-Xplore/data/raw/events_calendar/example_columns.xlsx"
 
-classify_and_save_w07(path_to_raw, path_example_columns, "output_01.xlsx")
+classify_and_save_w07(path_to_raw, path_example_columns, "output_s07.xlsx")
