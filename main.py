@@ -181,20 +181,51 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 @app.get("/")
 async def root():
     return {"message": "Welcome to the UCLA-Xplore API!"}
+
 ##########################
 ### Postgres Functions ###
 ##########################
 
-def query_postgres(params: Dict[str, Any]):
+def query_postgres(params: Dict[str, Any] = None, direct_time_slots: list = None):
     """
-    Query PostgreSQL database based on extracted parameters.
-    Only filters by date and time, not interests.
+    Query PostgreSQL database based on extracted parameters or direct time slots.
+    Supports multiple dates and time slots from both natural language parsing and UI selection.
+    
+    Args:
+        params: Dictionary of parsed parameters from natural language (optional)
+        direct_time_slots: List of time slot objects directly from UI (optional)
     """
     try:
-        date = params["date"]
-        start_time = params["start_time"]
-        end_time = params["end_time"]
-        # Interests are no longer used in this function
+        dates = []
+        time_slots = []
+        
+        # Handle direct time slots from graphical UI time slot selector
+        if direct_time_slots:
+            # Process the time slots data from your UI component
+            # You'll need to format this based on how your timetable component sends data
+            for slot in direct_time_slots:
+                # Assuming each slot has date, start_time, end_time
+                if slot.get("date") not in dates:
+                    dates.append(slot["date"])
+                time_slots.append({
+                    "start_time": slot["start_time"],
+                    "end_time": slot["end_time"]
+                })
+        
+        # Handle parsed parameters from natural language
+        elif params:
+            dates = params.get("dates", [params.get("date")]) if params.get("date") else params.get("dates", [])
+            time_slots = params.get("time_slots", [])
+            
+            # If using old format with single date and times
+            if params.get("date") and params.get("start_time") and params.get("end_time"):
+                dates = [params["date"]]
+                time_slots = [{"start_time": params["start_time"], "end_time": params["end_time"]}]
+
+        # Validate inputs
+        if not dates or not time_slots:
+            print("No dates or time slots provided")
+            return []
 
         # Connect to PostgreSQL database
         conn = psycopg2.connect(
@@ -208,16 +239,31 @@ def query_postgres(params: Dict[str, Any]):
 
         cur = conn.cursor()
         
-        # Base query for date and time only
-        query = """
-        SELECT event_id FROM events 
-        WHERE date = %s 
-        AND start_time >= %s 
-        AND end_time <= %s
+        # Build dynamic query for multiple dates and time slots
+        conditions = []
+        query_params = []
+        
+        for date in dates:
+            for time_slot in time_slots:
+                start_time = time_slot.get("start_time")
+                end_time = time_slot.get("end_time")
+                
+                if start_time and end_time:
+                    conditions.append("(date = %s AND start_time >= %s AND end_time <= %s)")
+                    query_params.extend([date, start_time, end_time])
+        
+        if not conditions:
+            print("No valid date/time combinations found")
+            cur.close()
+            conn.close()
+            return []
+        
+        # Combine all conditions with OR
+        query = f"""
+        SELECT DISTINCT event_id FROM events 
+        WHERE {' OR '.join(conditions)}
         """
         
-        query_params = [date, start_time, end_time]
-                
         cur.execute(query, query_params)
         matching_events = cur.fetchall()
 
@@ -403,15 +449,6 @@ def generate_llm_response(milvus_result):
         return f"Sorry, I couldn't process the events information at this time. Error: {str(e)}"
 
 
-# # Chat endpoint – requires authentication
-# @app.post("/chat", response_model=ChatResponse)
-# async def chat(chat_request: ChatRequest, current_user: User = Depends(get_current_user)):
-#     # Pipeline: Postgres -> Milvus -> LLM
-#     event_ids = query_postgres(chat_request.message)
-#     milvus_result = query_milvus_by_list_ids(event_ids)
-#     llm_response = generate_llm_response(milvus_result)
-#     return {"response": llm_response}
-
 # Chat endpoint – temporarily bypasses authentication
 @app.post("/chat", response_model=ChatResponse)
 async def chat(chat_request: ChatRequest):
@@ -448,22 +485,6 @@ async def chat(chat_request: ChatRequest):
     print("\n=== Chat Pipeline Complete ===\n")
     return {"response": llm_response}
 
-
-# # test endpoint
-# @app.post("/chat", response_model=ChatResponse)
-# async def chat(chat_request: ChatRequest):
-#     print(f"Received message: {chat_request.message}")
-
-#     event_ids = query_postgres(chat_request.message)
-#     if isinstance(event_ids, str):
-#         return {"response": f"Error querying Postgres: {event_ids}"}
-
-#     milvus_result = query_milvus_by_list_ids(event_ids)
-#     if isinstance(milvus_result, str):
-#         return {"response": f"Error querying Milvus: {milvus_result}"}
-
-#     llm_response = generate_llm_response(milvus_result)
-#     return {"response": llm_response}
 
 if __name__ == "__main__":
     import uvicorn
