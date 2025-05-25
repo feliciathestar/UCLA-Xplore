@@ -40,34 +40,38 @@ export async function POST(req: Request) {
   const lastMessage = messages[messages.length - 1];
   const userInput = lastMessage.content;
 
-  const backendRes = await fetch("http://localhost:8000/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: userInput })
-  });
+  return createDataStreamResponse({
+    execute: async (dataStream) => {
+      try {
+        const backendRes = await fetch("http://localhost:8000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userInput })
+        });
 
-  const { response } = await backendRes.json();
+        if (!backendRes.ok) {
+          throw new Error(`Backend responded with ${backendRes.status}`);
+        }
 
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    start(controller) {
-      // Stream the assistant message as a single SSE chunk
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-        id: Date.now().toString(),
-        role: "assistant",
-        content: response
-      })}\n\n`));
-      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-      controller.close();
-    }
-  });
+        const { response } = await backendRes.json();
+        console.log('Backend response:', response);
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "no-cache",
-      "Connection": "keep-alive"
-    }
+        // Use writeData to send the response
+        dataStream.writeData({
+          type: 'text',
+          content: response
+        });
+        console.log('dataStream.writeData called with:', { type: 'text', content: response }); 
+
+      } catch (error) {
+        console.error("Error fetching backend response:", error);
+        
+        dataStream.writeData({
+          type: 'text',
+          content: "Sorry, I encountered an error while processing your request."
+        });
+      }
+    },
   });
 }
 

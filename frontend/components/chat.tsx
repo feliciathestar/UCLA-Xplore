@@ -49,6 +49,7 @@ export function Chat({
     status,
     stop,
     reload,
+    data,
   } = useChat({
     api: '/api/chat',
     id,
@@ -66,6 +67,10 @@ export function Chat({
       toast.error('An error occured, please try again!');
     },
   });
+
+  console.log('AI SDK Messages:', messages);
+  console.log('AI SDK Data:', data); // <<< Your content sent via writeData should appear here
+
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
@@ -90,6 +95,7 @@ export function Chat({
           status={status}
           votes={votes}
           messages={messages}
+          data={data}
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
