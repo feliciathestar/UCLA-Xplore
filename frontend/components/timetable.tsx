@@ -2,79 +2,169 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 
+// Define the default date object outside the component to ensure a stable reference
+const DEFAULT_INITIAL_START_DATE = new Date("2025-05-12");
+
+interface TimeSlot {
+  date: string;
+  start_time: string;
+  end_time: string;
+}
+
 interface TimeTableProps {
   rows?: number;
   cols?: number;
   initialStartDate?: Date;
   startHour?: number;
   onSelectionChange?: (selection: number[]) => void;
+  onTimeSlotChange?: (timeSlots: TimeSlot[]) => void;
 }
 
 const TimeTable: React.FC<TimeTableProps> = ({
-  rows = 15, // This now represents hours, not rows (we'll have 2 rows per hour)
+  rows = 15,
   cols = 7,
-  initialStartDate = new Date("2025-05-12"), // Setting it to Monday, May 12, 2025
+  initialStartDate = DEFAULT_INITIAL_START_DATE, // Use the stable default date
   startHour = 8, 
   onSelectionChange,
+  onTimeSlotChange,
 }) => {
-  // Double the actual number of rows to account for 30-minute intervals
   const actualRows = rows * 2;
   
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [selectedBoxes, setSelectedBoxes] = useState<number[]>([]);
-  // Add a state to track the current selection (before mouseup)
   const [currentSelection, setCurrentSelection] = useState<number[]>([]);
-  // Add a state to track whether shift key is pressed
-  const [isShiftPressed, setIsShiftPressed] = useState(false);
+  const [isDeselecting, setIsDeselecting] = useState(false);
+  const [startBox, setStartBox] = useState<number | null>(null);
 
-  // Add event listeners for shift key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') {
-        setIsShiftPressed(true);
+  // Memoize the boxToDateTime function to prevent unnecessary re-renders
+  const boxToDateTime = useCallback((boxNumber: number) => {
+    const rowIndex = Math.floor((boxNumber - 1) / cols);
+    const colIndex = (boxNumber - 1) % cols;
+    
+    // Create a new date and ensure we're working with the start of day in local time
+    const date = new Date(initialStartDate.getFullYear(), initialStartDate.getMonth(), initialStartDate.getDate());
+    
+    // Find the Monday of the week containing initialStartDate
+    if (date.getDay() !== 1) {
+      const daysUntilMonday = (1 - date.getDay() + 7) % 7;
+      date.setDate(date.getDate() + daysUntilMonday);
+    }
+    
+    // Add the column offset
+    date.setDate(date.getDate() + colIndex);
+    
+    const totalMinutes = startHour * 60 + (rowIndex * 30);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    return {
+      date: date.toISOString().split('T')[0],
+      time: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`
+    };
+  }, [initialStartDate, cols, startHour]);
+
+  // Memoize the convertToTimeSlots function to prevent unnecessary calculations
+  const convertToTimeSlots = useCallback((selectedBoxes: number[]): TimeSlot[] => {
+    if (selectedBoxes.length === 0) return [];
+    
+    const dateGroups: { [date: string]: number[] } = {};
+    
+    selectedBoxes.forEach(boxNumber => {
+      const { date } = boxToDateTime(boxNumber);
+      if (!dateGroups[date]) {
+        dateGroups[date] = [];
       }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') {
-        setIsShiftPressed(false);
+      dateGroups[date].push(boxNumber);
+    });
+    
+    const timeSlots: TimeSlot[] = [];
+    
+    Object.entries(dateGroups).forEach(([date, boxes]) => {
+      boxes.sort((a, b) => {
+        const rowA = Math.floor((a - 1) / cols);
+        const rowB = Math.floor((b - 1) / cols);
+        return rowA - rowB;
+      });
+      
+      let rangeStart = boxes[0];
+      let rangeEnd = boxes[0];
+      
+      for (let i = 1; i < boxes.length; i++) {
+        const currentBox = boxes[i];
+        const previousBox = boxes[i - 1];
+        
+        const currentRow = Math.floor((currentBox - 1) / cols);
+        const previousRow = Math.floor((previousBox - 1) / cols);
+        const currentCol = (currentBox - 1) % cols;
+        const previousCol = (previousBox - 1) % cols;
+        
+        if (currentCol === previousCol && currentRow === previousRow + 1) {
+          rangeEnd = currentBox;
+        } else {
+          const startDateTime = boxToDateTime(rangeStart);
+          const endDateTime = boxToDateTime(rangeEnd);
+          
+          const endTime = new Date(`2000-01-01T${endDateTime.time}`);
+          endTime.setMinutes(endTime.getMinutes() + 30);
+          const endTimeStr = endTime.toTimeString().split(' ')[0];
+          
+          timeSlots.push({
+            date: startDateTime.date,
+            start_time: startDateTime.time,
+            end_time: endTimeStr
+          });
+          
+          rangeStart = currentBox;
+          rangeEnd = currentBox;
+        }
       }
-    };
+      
+      const startDateTime = boxToDateTime(rangeStart);
+      const endDateTime = boxToDateTime(rangeEnd);
+      
+      const endTime = new Date(`2000-01-01T${endDateTime.time}`);
+      endTime.setMinutes(endTime.getMinutes() + 30);
+      const endTimeStr = endTime.toTimeString().split(' ')[0];
+      
+      timeSlots.push({
+        date: startDateTime.date,
+        start_time: startDateTime.time,
+        end_time: endTimeStr
+      });
+    });
+    
+    return timeSlots;
+  }, [boxToDateTime, cols]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+  // Memoize the time slots to prevent unnecessary recalculations
+  const timeSlots = useMemo(() => convertToTimeSlots(selectedBoxes), [convertToTimeSlots, selectedBoxes]);
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  // Report selection changes to parent component if callback is provided
+  // Replace the problematic useEffects with these
   useEffect(() => {
     if (onSelectionChange) {
       onSelectionChange(selectedBoxes);
     }
   }, [selectedBoxes, onSelectionChange]);
 
+  useEffect(() => {
+    if (onTimeSlotChange) {
+      onTimeSlotChange(timeSlots);
+    }
+  }, [timeSlots, onTimeSlotChange]);
+
   const columnHeaders = useMemo(() => {
     const headers: { date: string; weekday: string }[] = [];
-    // Rearranged to start from Monday
     const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const current = new Date(initialStartDate);
     
-    // Ensure we're starting with Monday (day 1)
-    if (current.getDay() !== 1) { // Monday is 1 in getDay() (0 is Sunday)
-      // Find the closest Monday
+    if (current.getDay() !== 1) {
       const daysUntilMonday = (1 - current.getDay() + 7) % 7;
       current.setDate(current.getDate() + daysUntilMonday);
     }
     
     for (let i = 0; i < cols; i++) {
       const day = current.getDate();
-      const month = current.toLocaleString("default", { month: "short" });
-      // Get index in our rearranged weekdays array
-      const weekdayIndex = (current.getDay() + 6) % 7; // Transform Sunday (0) to 6, Monday (1) to 0, etc.
+      const weekdayIndex = (current.getDay() + 6) % 7;
       const weekday = weekdays[weekdayIndex];
       
       headers.push({
@@ -85,7 +175,6 @@ const TimeTable: React.FC<TimeTableProps> = ({
     }
     return headers;
   }, [initialStartDate, cols]);
-
 
   const timeLabels = useMemo(() => {
     const labels: string[] = [];
@@ -98,10 +187,7 @@ const TimeTable: React.FC<TimeTableProps> = ({
       else if (hour > 12 && hour < 24) amPm = "PM";
       else amPm = "AM";
       
-      // Add full hour label
       labels.push(`${displayHour} ${amPm}`);
-      
-      // Add empty label for half-hour
       labels.push("");
     }
     return labels;
@@ -109,69 +195,84 @@ const TimeTable: React.FC<TimeTableProps> = ({
 
   const handleMouseDown = (boxNumber: number) => {
     setIsMouseDown(true);
+    setStartBox(boxNumber);
     
-    // Start a new selection
+    const alreadySelected = selectedBoxes.includes(boxNumber);
+    setIsDeselecting(alreadySelected);
+    
     setCurrentSelection([boxNumber]);
   };
 
   const handleMouseEnter = useCallback(
     (boxNumber: number) => {
-      if (isMouseDown) {
-        if (currentSelection.length === 0) return;
-        
-        const startBox = currentSelection[0];
-        const endBox = boxNumber;
+      if (isMouseDown && startBox !== null) {
         const startRow = Math.floor((startBox - 1) / cols);
         const startCol = (startBox - 1) % cols;
-        const endRow = Math.floor((endBox - 1) / cols);
-        const endCol = (endBox - 1) % cols;
+        const endRow = Math.floor((boxNumber - 1) / cols);
+        const endCol = (boxNumber - 1) % cols;
         const minRow = Math.min(startRow, endRow);
         const maxRow = Math.max(startRow, endRow);
         const minCol = Math.min(startCol, endCol);
         const maxCol = Math.max(startCol, endCol);
         
-        const selected: number[] = [];
+        const range: number[] = [];
         for (let row = minRow; row <= maxRow; row++) {
           for (let col = minCol; col <= maxCol; col++) {
-            selected.push(row * cols + col + 1);
+            range.push(row * cols + col + 1);
           }
         }
         
-        setCurrentSelection(selected);
+        setCurrentSelection(range);
       }
     },
-    [isMouseDown, currentSelection, cols]
+    [isMouseDown, startBox, cols]
   );
 
   const handleMouseUpGlobal = useCallback(() => {
     if (isMouseDown) {
       setIsMouseDown(false);
       
-      // Apply the current selection
       if (currentSelection.length > 0) {
-        // INVERTED LOGIC: By default, we ADD to selections.
-        // If shift is pressed, we REPLACE the selections.
-        if (isShiftPressed) {
-          // Shift pressed: Replace existing selection
-          setSelectedBoxes(currentSelection);
+        if (isDeselecting) {
+          setSelectedBoxes(prev => {
+            const newSelected: number[] = [];
+            for (let i = 0; i < prev.length; i++) {
+              let keepThis = true;
+              for (let j = 0; j < currentSelection.length; j++) {
+                if (prev[i] === currentSelection[j]) {
+                  keepThis = false;
+                  break;
+                }
+              }
+              if (keepThis) {
+                newSelected.push(prev[i]);
+              }
+            }
+            return newSelected;
+          });
         } else {
-          // Default: Add to existing selection
           setSelectedBoxes(prev => {
             const selectionSet = new Set([...prev, ...currentSelection]);
             return Array.from(selectionSet);
           });
         }
         
-        // Clear current selection
         setCurrentSelection([]);
       }
+      
+      setIsDeselecting(false);
+      setStartBox(null);
     }
-  }, [isMouseDown, currentSelection, isShiftPressed]);
+  }, [isMouseDown, currentSelection, isDeselecting]);
 
-  // Use combined set of boxes for display
   const combinedSelection = useMemo(() => {
-    return [...new Set([...selectedBoxes, ...currentSelection])];
-  }, [selectedBoxes, currentSelection]);
+    if (isDeselecting) {
+      const currentSet = new Set(currentSelection);
+      return selectedBoxes.filter(box => !currentSet.has(box));
+    } else {
+      return [...new Set([...selectedBoxes, ...currentSelection])];
+    }
+  }, [selectedBoxes, currentSelection, isDeselecting]);
 
   useEffect(() => {
     document.addEventListener("mouseup", handleMouseUpGlobal);
@@ -182,13 +283,13 @@ const TimeTable: React.FC<TimeTableProps> = ({
 
   const timetableContainerStyle: React.CSSProperties = {
     display: "grid",
-    gridTemplateColumns: `minmax(30px, 45px) repeat(${cols}, minmax(40px, 1fr))`, // Min width for day columns
-    gridTemplateRows: `auto repeat(${actualRows}, minmax(20px, 1fr))`, // Reduced min height for better fit
+    gridTemplateColumns: `minmax(30px, 45px) repeat(${cols}, minmax(40px, 1fr))`,
+    gridTemplateRows: `auto repeat(${actualRows}, minmax(20px, 1fr))`,
     gap: "1px",
     userSelect: "none",
-    width: '100%', // Grid takes full width of its flex-grow parent
-    height: '100%', // Grid takes full height of its flex-grow parent
-    border: "1px solid hsl(var(--sidebar-border))", // Outer border for the grid
+    width: '100%',
+    height: '100%',
+    border: "1px solid hsl(var(--sidebar-border))",
   };
 
   const cellBaseStyle: React.CSSProperties = {
@@ -214,7 +315,7 @@ const TimeTable: React.FC<TimeTableProps> = ({
     justifyContent: "flex-end",
     paddingRight: "8px",
     fontSize: "0.65rem",
-    minWidth: "45px", // Reduced from 60px to 45px
+    minWidth: "45px",
   };
 
   const emptyTopLeftCellStyle: React.CSSProperties = {
@@ -225,10 +326,7 @@ const TimeTable: React.FC<TimeTableProps> = ({
     <div className="flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-3 pb-2 border-b border-ucla-blue/20">
         <h3 className="text-lg font-semibold text-ucla-blue-800">
-          Availability 
-          <span className="text-xs ml-2 font-normal text-muted-foreground">
-            (Hold Shift to replace selection)
-          </span>
+          Availability
         </h3>
         <button 
           onClick={() => setSelectedBoxes([])} 
@@ -270,34 +368,28 @@ const TimeTable: React.FC<TimeTableProps> = ({
             </div>
           ))}
 
-          {/* Time labels and selectable boxes, now by hour instead of half-hour */}
+          {/* Time labels and selectable boxes */}
           {[...Array(rows).keys()].map((hourIndex) => {
-            const hourRowIndex = hourIndex * 2; // Convert hour index to actual row index
+            const hourRowIndex = hourIndex * 2;
             return (
             <React.Fragment key={`hour-${hourIndex}`}>
-              {/* Time label for the hour */}
               <div 
                 style={{
                   ...timeLabelCellStyle,
                   borderRight: "2px solid hsl(var(--ucla-blue)/30%)",
                   borderBottom: hourIndex === rows - 1 ? undefined : "1px solid hsl(0, 0%, 85%)",
-                  // Make it taller to accommodate both 30-min slots
                   gridRow: `span 2`,
-                  // Center content vertically
                   alignItems: "center",
                 }}
                 className="timetable-time-label"
               >
-                {timeLabels[hourRowIndex]} {/* First label of the pair */}
+                {timeLabels[hourRowIndex]}
               </div>
 
-              {/* Full-hour row with two half-hour boxes in each column */}
               {[...Array(cols).keys()].map((colIndex) => {
-                // Calculate box numbers for both half-hour slots
                 const firstHalfBoxNumber = hourRowIndex * cols + colIndex + 1;
                 const secondHalfBoxNumber = (hourRowIndex + 1) * cols + colIndex + 1;
                 
-                // Check if boxes are in the combined selection
                 const firstHalfSelected = combinedSelection.includes(firstHalfBoxNumber);
                 const secondHalfSelected = combinedSelection.includes(secondHalfBoxNumber);
                 
@@ -307,15 +399,14 @@ const TimeTable: React.FC<TimeTableProps> = ({
                     className="timetable-hour-box"
                     style={{
                       ...cellBaseStyle,
-                      gridRow: `span 2`, // Make the box span 2 rows
-                      position: 'relative', // For positioning the half-hour divider
-                      padding: 0, // Remove padding to allow for inner divs
-                      display: 'block', // Override flex to allow for inner content positioning
+                      gridRow: `span 2`,
+                      position: 'relative',
+                      padding: 0,
+                      display: 'block',
                       borderRight: colIndex === cols - 1 ? undefined : "1px solid hsl(0, 0%, 85%)",
                       borderBottom: hourIndex === rows - 1 ? undefined : "1px solid hsl(0, 0%, 85%)",
                     }}
                   >
-                    {/* First 30-minute slot */}
                     <div
                       className={`timetable-half-box ${firstHalfSelected ? "timetable-selected" : ""}`}
                       onMouseDown={() => handleMouseDown(firstHalfBoxNumber)}
@@ -334,7 +425,6 @@ const TimeTable: React.FC<TimeTableProps> = ({
                       }}
                     />
                     
-                    {/* Dashed line separator */}
                     <div 
                       style={{
                         position: 'absolute',
@@ -347,7 +437,6 @@ const TimeTable: React.FC<TimeTableProps> = ({
                       }}
                     />
                     
-                    {/* Second 30-minute slot */}
                     <div
                       className={`timetable-half-box ${secondHalfSelected ? "timetable-selected" : ""}`}
                       onMouseDown={() => handleMouseDown(secondHalfBoxNumber)}
@@ -375,8 +464,5 @@ const TimeTable: React.FC<TimeTableProps> = ({
     </div>
   );
 };
-
-// Add this to your CSS or define a CSS variable for selection color
-// --selection-color: lightblue;
 
 export default TimeTable;
