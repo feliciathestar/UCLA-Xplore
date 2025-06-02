@@ -30,23 +30,27 @@ import { myProvider } from '@/lib/ai/providers';
 
 export const maxDuration = 60;
 
-// (chat)/api/chat/route.ts
-
-import { NextResponse } from "next/server";
-// (chat)/api/chat/route.ts
-
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages, timeSlots } = await req.json();
   const lastMessage = messages[messages.length - 1];
   const userInput = lastMessage.content;
+
+  console.log('🕐 Received time slots in API:', timeSlots);
 
   return createDataStreamResponse({
     execute: async (dataStream) => {
       try {
+        const requestBody = {
+          message: userInput,
+          ...(timeSlots && timeSlots.length > 0 && { timeSlots })
+        };
+
+        console.log('📤 Sending to backend:', requestBody);
+
         const backendRes = await fetch("http://localhost:8000/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userInput })
+          body: JSON.stringify(requestBody)
         });
 
         if (!backendRes.ok) {
@@ -54,17 +58,15 @@ export async function POST(req: Request) {
         }
 
         const { response } = await backendRes.json();
-        console.log('Backend response:', response);
+        console.log('📥 Backend response:', response);
 
-        // Use writeData to send the response
         dataStream.writeData({
           type: 'text',
           content: response
         });
-        console.log('dataStream.writeData called with:', { type: 'text', content: response }); 
 
       } catch (error) {
-        console.error("Error fetching backend response:", error);
+        console.error("❌ Error fetching backend response:", error);
         
         dataStream.writeData({
           type: 'text',

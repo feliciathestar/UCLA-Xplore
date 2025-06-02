@@ -21,7 +21,7 @@ from fastapi.responses import StreamingResponse
 
 # Other imports
 from datetime import datetime, timezone, timedelta
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 # Internal imports
 from backend.parser import extract_query_parameters
@@ -86,9 +86,15 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class TimeSlotModel(BaseModel):
+    date: str
+    start_time: str
+    end_time: str
+
 class ChatRequest(BaseModel):
     # Incoming chat message from user
     message: str
+    timeSlots: Optional[List[TimeSlotModel]] = None
 
 class ChatResponse(BaseModel):
     # Outgoing response to user
@@ -411,18 +417,22 @@ def generate_llm_response(milvus_result):
         # Format event information for the prompt
         events_text = ""
         for event in milvus_result:
-            events_text += f"\nEvent: {event.get('event_name', 'Unnamed event')}\n"
-            events_text += f"Location: {event.get('event_location', 'Location TBD')}\n"
-            events_text += f"Program: {event.get('event_programe', 'N/A')}\n"
+            # Fix: Use the correct field names from your Milvus results
+            events_text += f"\nEvent: {event.get('name', 'Unnamed event')}\n"
+            events_text += f"Location: {event.get('location', 'Location TBD')}\n"
+            events_text += f"Program: {event.get('program', 'N/A')}\n"
             
             # Handle tags properly - could be a string or a list
-            tags = event.get('event_tags', [])
+            tags = event.get('tags', [])
             if isinstance(tags, list):
                 events_text += f"Tags: {', '.join(tags) if tags else 'N/A'}\n"
             else:
                 events_text += f"Tags: {tags if tags else 'N/A'}\n"
             
-            events_text += f"Description: {event.get('event_description', 'No description available')}\n"
+            events_text += f"Description: {event.get('description', 'No description available')}\n"
+        
+        # Debug: Print the formatted events text
+        print(f"DEBUG: Formatted events text for LLM:\n{events_text}")
         
         # Create the prompt for GPT
         prompt = f"""Based on the following UCLA events, provide a concise and natural response highlighting the most relevant details. 
@@ -431,9 +441,12 @@ def generate_llm_response(milvus_result):
         Events:{events_text}
         
         Response:"""
+        
+        print(f"DEBUG: Full prompt being sent to OpenAI:\n{prompt}")
+        
         # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4.1-nano",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that provides information about UCLA events."},
                 {"role": "user", "content": prompt}
@@ -448,42 +461,93 @@ def generate_llm_response(milvus_result):
     except Exception as e:
         return f"Sorry, I couldn't process the events information at this time. Error: {str(e)}"
 
+def get_openai_embedding(text: str):
+    """
+    Generate OpenAI embedding for the given text.
+    
+    Args:
+        text: The text to generate embedding for
+        
+    Returns:
+        List of floats representing the embedding vector
+    """
+    try:
+        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        response = client.embeddings.create(
+            model="text-embedding-ada-002",
+            input=text
+        )
+        return response.data[0].embedding
+    except Exception as e:
+        print(f"Error generating OpenAI embedding: {e}")
+        return None
+
 
 # Chat endpoint – temporarily bypasses authentication
 @app.post("/chat", response_model=ChatResponse)
 async def chat(chat_request: ChatRequest):
-    # Pipeline: Parse -> Postgres (time filter) -> Milvus (Interest filter) -> LLM
-    print("\n=== Starting Chat Pipeline ===")
-    print(f"Received message: {chat_request.message}")
-    
-    print("\n1. Parsing query...")
-    query_params = extract_query_parameters(chat_request.message)
-    print(f"Extracted parameters: {query_params}")
-    
-    print("\n2. Querying Postgres for date/time filtering...")
-    event_ids = query_postgres(query_params)
-    print(f"Postgres returned {len(event_ids)} event IDs: {event_ids}")
-    
-    print("\n3. Querying Milvus...")
-    print(f"DEBUG: Calling query_milvus_by_list_id with event_ids: {event_ids}")
-    milvus_result = query_milvus_by_list_id(event_ids)
-    print(f"DEBUG: Raw milvus_result: {type(milvus_result).__name__}")
-    
-    if isinstance(milvus_result, str):
-        print(f"DEBUG: milvus_result is a STRING (likely an error from Milvus): {milvus_result}")
-    elif isinstance(milvus_result, list):
-        print(f"DEBUG: milvus_result is a LIST. Number of items: {len(milvus_result)}")
-        if milvus_result:
-            print(f"DEBUG: First item in milvus_result: {milvus_result[0]}")
-    else:
-        print(f"DEBUG: milvus_result is of unexpected type: {type(milvus_result)}")
+    try:
+        # Pipeline: Parse -> Postgres (time filter) -> Milvus (Interest filter) -> LLM
+        print("\n=== Starting Chat Pipeline ===")
+        print(f"📨 Received message: {chat_request.message}")
+        print(f"🕐 Received time slots: {chat_request.timeSlots}")
+        
+        # Convert Pydantic models to dictionaries for the query function
+        time_slots_dict = None
+        if chat_request.timeSlots:
+            time_slots_dict = [slot.dict() for slot in chat_request.timeSlots]
+            print(f"🔄 Converted time slots: {time_slots_dict}")
+        
+        print("\n1. Processing query parameters...")
+        # Use direct time slots if provided, otherwise parse the message
+        if time_slots_dict and len(time_slots_dict) > 0:
+            print("🎯 Using direct time slots from UI")
+            print(f"Time slots data: {time_slots_dict}")
+        else:
+            print("📝 Parsing message for query parameters")
+            query_params = extract_query_parameters(chat_request.message)
+            print(f"Extracted parameters: {query_params}")
+        
+        print("\n2. Querying Postgres for date/time filtering...")
+        if time_slots_dict and len(time_slots_dict) > 0:
+            event_ids = query_postgres(direct_time_slots=time_slots_dict)
+        else:
+            event_ids = query_postgres(params=query_params if 'query_params' in locals() else None)
+        
+        print(f"Postgres returned {len(event_ids)} event IDs: {event_ids}")
+        
+        print("\n3. Querying Milvus...")
+        if event_ids and len(event_ids) > 0:
+            print(f"DEBUG: Calling query_milvus_by_list_id with event_ids: {event_ids}")
+            milvus_result = query_milvus_by_list_id(event_ids)
+        else:
+            print(f"DEBUG: No event IDs found, falling back to semantic search with message: '{chat_request.message}'")
+            milvus_result = query_milvus_by_vector_similarity(chat_request.message)
+        
+        print(f"DEBUG: Raw milvus_result type: {type(milvus_result).__name__}")
+        
+        if isinstance(milvus_result, str):
+            print(f"DEBUG: milvus_result is a STRING (likely an error from Milvus): {milvus_result}")
+        elif isinstance(milvus_result, list):
+            print(f"DEBUG: milvus_result is a LIST. Number of items: {len(milvus_result)}")
+            if milvus_result:
+                print(f"DEBUG: First item in milvus_result: {milvus_result[0]}")
+        else:
+            print(f"DEBUG: milvus_result is of unexpected type: {type(milvus_result)}")
 
-    print("\n4. Generating LLM Response...")
-    llm_response = generate_llm_response(milvus_result)
-    print(f"Final response: {llm_response}")
-    
-    print("\n=== Chat Pipeline Complete ===\n")
-    return {"response": llm_response}
+        print("\n4. Generating LLM Response...")
+        llm_response = generate_llm_response(milvus_result)
+        print(f"Final response: {llm_response}")
+        
+        print("\n=== Chat Pipeline Complete ===\n")
+        
+        return ChatResponse(response=llm_response)
+        
+    except Exception as e:
+        print(f"❌ Error in chat endpoint: {e}")
+        print(f"❌ Error details: {str(e)}")
+        print("\n=== Chat Pipeline Failed ===\n")
+        return ChatResponse(response="Sorry, I encountered an error processing your request.")
 
 
 if __name__ == "__main__":
