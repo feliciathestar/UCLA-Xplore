@@ -225,8 +225,9 @@ function PureMultimodalInput({
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
+        style={{ outline: 'none' }}
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 border-[1.5px] border-gray-200 focus:border-gray-200 focus:shadow-[0_0_0_2px_white,0_0_0_4px_#5BC2E7] focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus:ring-0',
           className,
         )}
         rows={2}
