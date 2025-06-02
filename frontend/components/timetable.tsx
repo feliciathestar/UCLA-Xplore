@@ -2,8 +2,8 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 
-// Define the default date object outside the component to ensure a stable reference
-const DEFAULT_INITIAL_START_DATE = new Date("2025-05-12");
+// Start with current date
+const DEFAULT_INITIAL_START_DATE = new Date();
 
 interface TimeSlot {
   date: string;
@@ -23,11 +23,21 @@ interface TimeTableProps {
 const TimeTable: React.FC<TimeTableProps> = ({
   rows = 15,
   cols = 7,
-  initialStartDate = DEFAULT_INITIAL_START_DATE, // Use the stable default date
+  initialStartDate = DEFAULT_INITIAL_START_DATE,
   startHour = 8, 
   onSelectionChange,
   onTimeSlotChange,
 }) => {
+  // Add state for current week
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const date = new Date(initialStartDate);
+    // Find Monday of the current week
+    const dayOfWeek = date.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    date.setDate(date.getDate() + daysUntilMonday);
+    return date;
+  });
+
   const actualRows = rows * 2;
   
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -41,16 +51,7 @@ const TimeTable: React.FC<TimeTableProps> = ({
     const rowIndex = Math.floor((boxNumber - 1) / cols);
     const colIndex = (boxNumber - 1) % cols;
     
-    // Create a new date and ensure we're working with the start of day in local time
-    const date = new Date(initialStartDate.getFullYear(), initialStartDate.getMonth(), initialStartDate.getDate());
-    
-    // Find the Monday of the week containing initialStartDate
-    if (date.getDay() !== 1) {
-      const daysUntilMonday = (1 - date.getDay() + 7) % 7;
-      date.setDate(date.getDate() + daysUntilMonday);
-    }
-    
-    // Add the column offset
+    const date = new Date(currentWeekStart);
     date.setDate(date.getDate() + colIndex);
     
     const totalMinutes = startHour * 60 + (rowIndex * 30);
@@ -61,7 +62,7 @@ const TimeTable: React.FC<TimeTableProps> = ({
       date: date.toISOString().split('T')[0],
       time: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`
     };
-  }, [initialStartDate, cols, startHour]);
+  }, [currentWeekStart, cols, startHour]);
 
   // Memoize the convertToTimeSlots function to prevent unnecessary calculations
   const convertToTimeSlots = useCallback((selectedBoxes: number[]): TimeSlot[] => {
@@ -153,28 +154,25 @@ const TimeTable: React.FC<TimeTableProps> = ({
   }, [timeSlots, onTimeSlotChange]);
 
   const columnHeaders = useMemo(() => {
-    const headers: { date: string; weekday: string }[] = [];
+    const headers: { date: string; weekday: string; fullDate: string }[] = [];
     const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const current = new Date(initialStartDate);
-    
-    if (current.getDay() !== 1) {
-      const daysUntilMonday = (1 - current.getDay() + 7) % 7;
-      current.setDate(current.getDate() + daysUntilMonday);
-    }
+    const current = new Date(currentWeekStart);
     
     for (let i = 0; i < cols; i++) {
       const day = current.getDate();
+      const month = current.getMonth() + 1;
       const weekdayIndex = (current.getDay() + 6) % 7;
       const weekday = weekdays[weekdayIndex];
       
       headers.push({
-        date: `${day}`,
+        date: `${month}/${day}`,
         weekday: weekday,
+        fullDate: current.toISOString().split('T')[0]
       });
       current.setDate(current.getDate() + 1);
     }
     return headers;
-  }, [initialStartDate, cols]);
+  }, [currentWeekStart, cols]);
 
   const timeLabels = useMemo(() => {
     const labels: string[] = [];
@@ -322,21 +320,69 @@ const TimeTable: React.FC<TimeTableProps> = ({
     ...cellBaseStyle,
   };
 
+  // Navigation functions
+  const goToCurrentWeek = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    today.setDate(today.getDate() + daysUntilMonday);
+    setCurrentWeekStart(today);
+    setSelectedBoxes([]);
+  };
+
+  // Get week range for display
+  const weekRange = useMemo(() => {
+    const start = new Date(currentWeekStart);
+    const end = new Date(currentWeekStart);
+    end.setDate(end.getDate() + 6);
+    
+    const formatDate = (date: Date) => {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: start.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+      });
+    };
+    
+    return `${formatDate(start)} - ${formatDate(end)}`;
+  }, [currentWeekStart]);
+
   return (
     <div className="flex flex-col h-full w-full">
+      {/* Enhanced header with week navigation */}
       <div className="flex justify-between items-center mb-3 pb-2 border-b border-ucla-blue/20">
-        <h3 className="text-lg font-semibold text-ucla-blue-800">
-          Availability
-        </h3>
-        <button 
-          onClick={() => setSelectedBoxes([])} 
-          className="text-xs py-2 px-3 bg-ucla-blue/10 hover:bg-ucla-blue/20 
-          rounded-md text-ucla-blue-700 transition-colors"
-        >
-          Reset
-        </button>
+        <div className="flex items-center gap-4">
+          <h3 className="text-lg font-semibold text-ucla-blue-800">
+            Availability
+          </h3>
+          <div className="text-sm text-gray-600">
+            {weekRange}
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* Only Today button */}
+          <button 
+            onClick={goToCurrentWeek}
+            className="text-xs py-1 px-2 bg-ucla-yellow/20 hover:bg-ucla-yellow/30 
+            rounded-md text-ucla-blue-700 transition-colors"
+          >
+            Today
+          </button>
+          
+          <div className="w-px h-4 bg-gray-300 mx-1"></div>
+          
+          <button 
+            onClick={() => setSelectedBoxes([])} 
+            className="text-xs py-2 px-3 bg-ucla-blue/10 hover:bg-ucla-blue/20 
+            rounded-md text-ucla-blue-700 transition-colors"
+          >
+            Reset
+          </button>
+        </div>
       </div>
       
+      {/* Rest of your existing timetable code */}
       <div className="flex-grow min-h-0"> 
         <div
           style={timetableContainerStyle}
@@ -352,7 +398,7 @@ const TimeTable: React.FC<TimeTableProps> = ({
             borderBottom: "1px solid hsl(var(--sidebar-border))"
           }}>&nbsp;</div>
 
-          {/* Date/Weekday headers */}
+          {/* Date/Weekday headers - now showing month/day */}
           {columnHeaders.map((header, index) => (
             <div 
               key={`header-${index}`} 

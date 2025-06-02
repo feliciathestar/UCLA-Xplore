@@ -1,5 +1,5 @@
 import { UIMessage, JSONValue } from 'ai';
-import { PreviewMessage, ThinkingMessage } from './message';
+import { PreviewMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { Overview } from './overview';
 import { memo } from 'react';
@@ -33,6 +33,58 @@ function PureMessages({
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
+  // Create a combined array of messages in proper order
+  const renderMessages = () => {
+    const allMessages: UIMessage[] = [];
+    
+    // Add all user messages first (to maintain their order)
+    const userMessages = messages.filter(message => message.role !== 'assistant');
+    
+    // Create assistant messages from backend data or fallback to AI messages
+    let assistantMessages: UIMessage[] = [];
+    
+    if (data && data.length > 0) {
+      // Use backend data for assistant responses
+      assistantMessages = data
+        .map((dataItem, index) => {
+          if (typeof dataItem === 'object' && dataItem !== null && 'content' in dataItem) {
+            const item = dataItem as { type?: string; content: string };
+            
+            if (item.content && item.content.trim() !== '') {
+              return {
+                id: `backend-msg-${index}`,
+                role: 'assistant' as const,
+                content: item.content,
+                createdAt: new Date(),
+                parts: [{ type: 'text' as const, text: item.content }],
+              };
+            }
+          }
+          return null;
+        })
+        .filter(msg => msg !== null); // Changed this line
+    } else {
+      // Fallback to AI assistant messages if no backend data
+      assistantMessages = messages.filter(message => message.role === 'assistant');
+    }
+    
+    // Interleave user and assistant messages
+    const maxLength = Math.max(userMessages.length, assistantMessages.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (i < userMessages.length) {
+        allMessages.push(userMessages[i]);
+      }
+      if (i < assistantMessages.length) {
+        allMessages.push(assistantMessages[i]);
+      }
+    }
+    
+    return allMessages;
+  };
+
+  const messagesToRender = renderMessages();
+
   return (
     <div
       ref={messagesContainerRef}
@@ -40,12 +92,18 @@ function PureMessages({
     >
       {messages.length === 0 && !data?.length && <Overview />}
 
-      {messages.map((message, index) => (
+      {/* Render messages in proper conversational order */}
+      {messagesToRender.map((message, index) => (
         <PreviewMessage
           key={message.id}
           chatId={chatId}
           message={message}
-          isLoading={status === 'streaming' && messages.length - 1 === index}
+          isLoading={
+            message.role === 'assistant' && 
+            status === 'streaming' && 
+            index === messagesToRender.length - 1 &&
+            !data?.length // Only show loading for AI messages, not backend data
+          }
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
@@ -56,48 +114,6 @@ function PureMessages({
           isReadonly={isReadonly}
         />
       ))}
-
-      {/* THIS IS THE CORRECTED SECTION TO RENDER DATA ITEMS AS CHAT BUBBLES */}
-      {data?.map((dataItem, index) => {
-        if (typeof dataItem === 'object' && dataItem !== null && 'content' in dataItem) {
-          const item = dataItem as { type?: string; content: string };
-          
-          // Transform dataItem to a UIMessage-like object
-          const assistantMessageFromData: UIMessage = {
-            id: `data-msg-${generateUUID()}`, // Ensure a unique ID
-            role: 'assistant', // Treat it as an assistant message
-            content: item.content, // Keep content for potential direct use or display
-            createdAt: new Date(), // Optional: for consistency
-            parts: [{ type: 'text', text: item.content }], // <<< FIXED: Use 'text' instead of 'value'
-          };
-
-          // Render using your existing PreviewMessage component
-          return (
-            <PreviewMessage
-              key={assistantMessageFromData.id}
-              chatId={chatId}
-              message={assistantMessageFromData}
-              isLoading={false} // These messages are not actively streaming
-              vote={undefined} // Pass undefined as vote is required
-              setMessages={setMessages} 
-              reload={reload}
-              isReadonly={isReadonly}
-            />
-          );
-        }
-        // Fallback for unexpected data structures (optional, consider logging instead)
-        return (
-          <div key={`data-fallback-${index}`} className="px-4">
-            <pre className="bg-gray-100 p-2 text-xs">
-              Unexpected data format: {JSON.stringify(dataItem, null, 2)}
-            </pre>
-          </div>
-        );
-      })}
-
-      {status === 'submitted' &&
-        messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
 
       <div
         ref={messagesEndRef}

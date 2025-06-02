@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import TimeTable from './timetable';
+import { useTimeSlots } from './time-slot-context';
 
 interface TimeSlot {
   date: string;
@@ -11,14 +12,16 @@ interface TimeSlot {
 
 export default function TimeTableWithTesting() {
   const [currentTimeSlots, setCurrentTimeSlots] = useState<TimeSlot[]>([]);
+  const { setTimeSlots } = useTimeSlots();
 
   // Memoize the callback to prevent infinite re-renders
   const handleTimeSlotChange = useCallback((timeSlots: TimeSlot[]) => {
     setCurrentTimeSlots(timeSlots);
+    setTimeSlots(timeSlots); // Update global context
     console.log("🔄 Time slots updated for PostgreSQL query:");
     console.log("📅 Time slots data:", timeSlots);
     console.log("🚀 Would call: query_postgres(null, timeSlots)");
-  }, []);
+  }, [setTimeSlots]);
 
   // Memoize this callback too
   const handleSelectionChange = useCallback((selection: number[]) => {
@@ -33,17 +36,19 @@ export default function TimeTableWithTesting() {
         onTimeSlotChange={handleTimeSlotChange}
         onSelectionChange={handleSelectionChange}
       />
-      
-      {/* Simple debug display */}
-      <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-24 overflow-y-auto">
-        <div className="font-medium mb-1">PostgreSQL Data:</div>
-        <pre className="text-xs">
-          {currentTimeSlots.length > 0 
-            ? JSON.stringify(currentTimeSlots, null, 2)
-            : "No selections"
-          }
-        </pre>
-      </div>
     </div>
   );
 }
+
+
+      
+// {/* Simple debug display */}
+// <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-24 overflow-y-auto">
+//   <div className="font-medium mb-1">PostgreSQL Data:</div>
+//   <pre className="text-xs">
+//     {currentTimeSlots.length > 0 
+//       ? JSON.stringify(currentTimeSlots, null, 2)
+//       : "No selections"
+//     }
+//   </pre>
+// </div>

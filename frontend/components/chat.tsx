@@ -1,7 +1,7 @@
 'use client';
 
 import type { Attachment, UIMessage } from 'ai';
-import { useChat } from '@ai-sdk/react';
+import { useChat } from 'ai/react';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
@@ -13,6 +13,7 @@ import { Messages } from './messages';
 import { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
+import { useTimeSlots } from './time-slot-context';
 
 export function Chat({
   id,
@@ -28,6 +29,7 @@ export function Chat({
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
+  const { timeSlots } = useTimeSlots();
   
   const debugHandleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     console.log("Form submission starting with input:", input);
@@ -53,24 +55,19 @@ export function Chat({
   } = useChat({
     api: '/api/chat',
     id,
-    body: { id, selectedChatModel: selectedChatModel },
+    body: { id, selectedChatModel: selectedChatModel, timeSlots: timeSlots },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      console.log("Chat() completed successfully!");
       mutate('/api/history');
     },
     onError: (error) => {
-      console.error("Chat error details:", error);
+      console.error('Error in chat submission:', error);
       toast.error('An error occured, please try again!');
     },
   });
-
-  console.log('AI SDK Messages:', messages);
-  console.log('AI SDK Data:', data); // <<< Your content sent via writeData should appear here
-
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
