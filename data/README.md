@@ -65,7 +65,7 @@ psql=# \d timeslots
 
 ## Populate Timeslots Table
 
-1. Insert all time slots (30 mins interval) between date 2025-02-17 and 2025-02-25
+1. Insert all time slots (30 mins interval) between date 2025-04-01 and 2025-07-01
 ```
 psql=# INSERT INTO timeslots (date, start_time, end_time)
        SELECT 
@@ -73,11 +73,12 @@ psql=# INSERT INTO timeslots (date, start_time, end_time)
            (make_time(0,0,0) + (n - 1) * interval '30 minutes')::time AS start_time,
            (make_time(0,0,0) + (n - 1) * interval '30 minutes' + interval '30 minutes')::time AS end_time
        FROM (
-           SELECT ('2025-02-17'::date + INTERVAL '1 day' * (a.a + (10 * b.a))) AS date
+           SELECT ('2025-04-01'::date + INTERVAL '1 day' * (a.a + (10 * b.a))) AS date
            FROM (SELECT 0 a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 
-               UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
-           CROSS JOIN (SELECT 0 a UNION ALL SELECT 1) b
-           WHERE ('2025-02-17'::date + INTERVAL '1 day' * (a.a + (10 * b.a))) <= '2025-02-25'
+                 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+           CROSS JOIN (SELECT 0 a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 
+                       UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+           WHERE ('2025-04-01'::date + INTERVAL '1 day' * (a.a + (10 * b.a))) <= '2025-07-01'
        ) d
        CROSS JOIN generate_series(1, 48) n;
 ```
@@ -104,11 +105,16 @@ $ pip3 install psycopg2
 
 ```
 psql=# UPDATE timeslots ts
-       SET event_id = COALESCE(ts.event_id, '[]'::JSONB) || to_jsonb(e.event_id)
-       FROM events e
-       WHERE ts.date = e.date
-       AND ts.start_time >= e.start_time 
-       AND ts.start_time < e.end_time;
+       SET event_id = COALESCE(
+           (
+               SELECT jsonb_agg(DISTINCT e.event_id ORDER BY e.event_id)
+               FROM events e
+               WHERE e.date = ts.date
+                 AND ts.start_time >= e.start_time
+                 AND ts.start_time < e.end_time
+           ),
+           '[]'::JSONB
+       );
 ```
 
 ## Querying Tables

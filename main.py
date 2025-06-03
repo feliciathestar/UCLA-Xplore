@@ -418,35 +418,33 @@ def generate_llm_response(milvus_result):
         events_text = ""
         for event in milvus_result:
             # Fix: Use the correct field names from your Milvus results
-            events_text += f"\nEvent: {event.get('name', 'Unnamed event')}\n"
-            events_text += f"Location: {event.get('location', 'Location TBD')}\n"
-            events_text += f"Program: {event.get('program', 'N/A')}\n"
+            events_text += f"\nEvent: {event.get('event_name', 'Unnamed event')}\n"
+            events_text += f"Location: {event.get('event_location', 'Location TBD')}\n"
+            events_text += f"Program: {event.get('event_programe', 'N/A')}\n"
             
             # Handle tags properly - could be a string or a list
-            tags = event.get('tags', [])
+            tags = event.get('event_tags', [])
             if isinstance(tags, list):
                 events_text += f"Tags: {', '.join(tags) if tags else 'N/A'}\n"
             else:
                 events_text += f"Tags: {tags if tags else 'N/A'}\n"
             
-            events_text += f"Description: {event.get('description', 'No description available')}\n"
-        
-        # Debug: Print the formatted events text
-        print(f"DEBUG: Formatted events text for LLM:\n{events_text}")
+            events_text += f"Description: {event.get('event_description', 'No description available')}\n"
+    
         
         # Create the prompt for GPT
-        prompt = f"""Based on the following UCLA events, provide a concise and natural response highlighting the most relevant details. 
-        Focus on key information like event names, times, locations, and any special features. Keep the response friendly and informative.
-        
-        Events:{events_text}
-        
-        Response:"""
-        
-        print(f"DEBUG: Full prompt being sent to OpenAI:\n{prompt}")
+        prompt = f"""
+            Based on the following UCLA events, provide a concise and natural response highlighting the most relevant details. 
+            Focus on key information like event names, times, locations, and any special features. Keep the response friendly and informative.
+            
+            Events:{events_text}
+            
+            Response:
+        """
         
         # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4.1-nano",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that provides information about UCLA events."},
                 {"role": "user", "content": prompt}

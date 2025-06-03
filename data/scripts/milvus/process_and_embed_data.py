@@ -1,19 +1,25 @@
 import openai
 import pandas as pd
 import numpy as np
+import os
+from dotenv import load_dotenv
 
-# Load the dataset
-file_path = "../../raw/events_calendar/w07_processed.xlsx"
-df = pd.read_excel(file_path)
+# Load environment variables from .env file
+load_dotenv()
+
+# Set OpenAI API key from environment variable
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+file_path = "/Users/wanxinxiao/Desktop/UCLA-Xplore/data/scripts/milvus/2025_spring_events.csv"
+df = pd.read_csv(file_path)
 
 # Select relevant columns
 df_filtered = df[['event_id', 'event_description', 'event_name', 'event_tags', 'event_programe', 'event_location']].copy()
 
 # Drop rows where event_description is missing
-df_filtered = df_filtered.dropna(subset=['event_description'])
+df_filtered = df_filtered.dropna(subset=['event_name'])
 
 # OpenAI Embedding API Setup
-openai.api_key = "api-key-here" # Replace with your key
 embedding_model = "text-embedding-ada-002"
 
 # Function to chunk text into smaller segments
@@ -56,8 +62,10 @@ for _, row in df_filtered.iterrows():
             "event_description": row["event_description"]
         })
 
+date = pd.Timestamp.now().strftime("%Y%m%d")    
+
 # Convert to DataFrame
 embedding_df = pd.DataFrame(embedding_data)
-embedding_df.to_csv("processed_embeddings.csv", index=False)
+embedding_df.to_csv(f"processed_embeddings_{date}.csv", index=False)
 
-print("✅ Embeddings saved to processed_embeddings.csv")
+print(f"✅ Embeddings saved to processed_embeddings_{date}.csv")
