@@ -36,19 +36,19 @@ export default function TimeTableWithTesting() {
         onTimeSlotChange={handleTimeSlotChange}
         onSelectionChange={handleSelectionChange}
       />
+      {/* Simple debug display
+      <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-24 overflow-y-auto">
+        <div className="font-medium mb-1">PostgreSQL Data:</div>
+        <pre className="text-xs">
+          {currentTimeSlots.length > 0 
+            ? JSON.stringify(currentTimeSlots, null, 2)
+            : "No selections"
+          }
+        </pre>
+      </div> */}
     </div>
   );
 }
 
 
       
-// {/* Simple debug display */}
-// <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-24 overflow-y-auto">
-//   <div className="font-medium mb-1">PostgreSQL Data:</div>
-//   <pre className="text-xs">
-//     {currentTimeSlots.length > 0 
-//       ? JSON.stringify(currentTimeSlots, null, 2)
-//       : "No selections"
-//     }
-//   </pre>
-// </div>

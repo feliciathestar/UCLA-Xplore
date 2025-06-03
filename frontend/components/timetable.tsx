@@ -35,6 +35,7 @@ const TimeTable: React.FC<TimeTableProps> = ({
     const dayOfWeek = date.getDay();
     const daysUntilMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     date.setDate(date.getDate() + daysUntilMonday);
+    date.setHours(0, 0, 0, 0); // Add this line
     return date;
   });
 
@@ -326,6 +327,7 @@ const TimeTable: React.FC<TimeTableProps> = ({
     const dayOfWeek = today.getDay();
     const daysUntilMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     today.setDate(today.getDate() + daysUntilMonday);
+    today.setHours(0, 0, 0, 0); // Add this line
     setCurrentWeekStart(today);
     setSelectedBoxes([]);
   };
