@@ -4,17 +4,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 # authentication and authorization
-import jwt
+from jose import jwt
 from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 # database connection
 import psycopg2
 import os
 from dotenv import load_dotenv
-from pymilvus import connections, Collection
+# Remove pymilvus imports, use requests instead
+import requests
+import json
 import openai
+import numpy as np
 
 # UI imports
 from fastapi.responses import StreamingResponse
@@ -35,6 +37,7 @@ load_dotenv()
 MILVUS_ENDPOINT = os.getenv("MILVUS_ENDPOINT")
 MILVUS_TOKEN = os.getenv("MILVUS_TOKEN")
 MILVUS_COLLECTION_NAME = os.getenv("MILVUS_COLLECTION_NAME")
+MILVUS_CLUBS_COLLECTION_NAME = "ucla_clubs"
 
 # OpenAI constants
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -51,8 +54,6 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers in requests
 )
 
-# JWT configuration
-SECRET_KEY = "your_secret_key"  # change this in production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -155,7 +156,7 @@ def get_user(username: str):
     return None
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
-    """"
+    """
     Get the current user from the JWT token.
     Args:
         token: JWT token string
@@ -179,15 +180,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user
 
-
-##################
-### API routes ###
-##################
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the UCLA-Xplore API!"}
-
 ##########################
 ### Postgres Functions ###
 ##########################
@@ -205,80 +197,73 @@ def query_postgres(params: Dict[str, Any] = None, direct_time_slots: list = None
         dates = []
         time_slots = []
         
-        # Handle direct time slots from graphical UI time slot selector
+        # Handle direct time slots from UI
         if direct_time_slots:
-            # Process the time slots data from your UI component
-            # You'll need to format this based on how your timetable component sends data
             for slot in direct_time_slots:
-                # Assuming each slot has date, start_time, end_time
-                if slot.get("date") not in dates:
-                    dates.append(slot["date"])
-                time_slots.append({
-                    "start_time": slot["start_time"],
-                    "end_time": slot["end_time"]
-                })
+                if hasattr(slot, 'date'):
+                    dates.append(slot.date)
+                    time_slots.append({
+                        'date': slot.date,
+                        'start_time': slot.start_time,
+                        'end_time': slot.end_time
+                    })
         
         # Handle parsed parameters from natural language
-        elif params:
-            dates = params.get("dates", [params.get("date")]) if params.get("date") else params.get("dates", [])
-            time_slots = params.get("time_slots", [])
-            
-            # If using old format with single date and times
-            if params.get("date") and params.get("start_time") and params.get("end_time"):
-                dates = [params["date"]]
-                time_slots = [{"start_time": params["start_time"], "end_time": params["end_time"]}]
-
-        # Validate inputs
-        if not dates or not time_slots:
-            print("No dates or time slots provided")
+        if params:
+            if 'dates' in params:
+                dates.extend(params['dates'])
+            if 'time_slots' in params:
+                time_slots.extend(params['time_slots'])
+        
+        # If no specific dates/times, return empty list
+        if not dates and not time_slots:
             return []
-
-        # Connect to PostgreSQL database
+        
+        # Database connection
         conn = psycopg2.connect(
-            dbname=os.getenv('DB_NAME'),
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
-            host=os.getenv('DB_HOST'),
-            port=os.getenv('DB_PORT'),
-            sslmode=os.getenv('DB_SSLMODE')  
+            host=os.getenv("DB_HOST"),
+            database=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            port=os.getenv("DB_PORT", 5432),
+            sslmode=os.getenv("DB_SSLMODE", "require")
         )
-
+        
         cur = conn.cursor()
         
-        # Build dynamic query for multiple dates and time slots
-        conditions = []
+        # Build query based on available parameters
+        query_conditions = []
         query_params = []
         
-        for date in dates:
-            for time_slot in time_slots:
-                start_time = time_slot.get("start_time")
-                end_time = time_slot.get("end_time")
-                
-                if start_time and end_time:
-                    conditions.append("(date = %s AND start_time >= %s AND end_time <= %s)")
-                    query_params.extend([date, start_time, end_time])
+        if dates:
+            date_placeholders = ','.join(['%s'] * len(dates))
+            query_conditions.append(f"DATE(event_start_time) IN ({date_placeholders})")
+            query_params.extend(dates)
         
-        if not conditions:
-            print("No valid date/time combinations found")
-            cur.close()
-            conn.close()
+        if time_slots:
+            time_conditions = []
+            for slot in time_slots:
+                time_conditions.append("(DATE(event_start_time) = %s AND TIME(event_start_time) >= %s AND TIME(event_start_time) <= %s)")
+                query_params.extend([slot['date'], slot['start_time'], slot['end_time']])
+            if time_conditions:
+                query_conditions.append(f"({' OR '.join(time_conditions)})")
+        
+        if not query_conditions:
             return []
         
-        # Combine all conditions with OR
         query = f"""
-        SELECT DISTINCT event_id FROM events 
-        WHERE {' OR '.join(conditions)}
+        SELECT event_id FROM events 
+        WHERE {' AND '.join(query_conditions)}
+        ORDER BY event_start_time
         """
         
         cur.execute(query, query_params)
         matching_events = cur.fetchall()
-
-        # Format results as list of event IDs
         event_ids = [str(event[0]) for event in matching_events]
-
+        
         cur.close()
         conn.close()
-
+        
         return event_ids
 
     except psycopg2.Error as e:
@@ -288,115 +273,65 @@ def query_postgres(params: Dict[str, Any] = None, direct_time_slots: list = None
         print(f"Error processing query: {e}")
         return []
 
-
-########################
-### Milvus functions ###
-########################
-
-def initialize_milvus():
-    connections.connect(uri=MILVUS_ENDPOINT, token=MILVUS_TOKEN)
-    collection = Collection(MILVUS_COLLECTION_NAME)
-    collection.load()
-    return collection
-
-def query_milvus_by_single_id(event_id):
+def query_milvus_by_vector_similarity(query_text):
     """
-    Query Milvus database by one exact event ID
+    Query Milvus database for vector similarity search using REST API.
     
     Args:
-        event_id: The ID of the event to retrieve
+        query_text: The text to search for similar events/clubs
         
     Returns:
-        Dictionary with event details or error message
+        List of matching events/clubs or error string
     """
     try:
-        collection = initialize_milvus()
-        expr = f"event_id == {event_id}"
-        results = collection.query(
-            expr,
-            output_fields=["event_name", "event_tags", "event_programe", "event_location", "event_description"]
+        # Initialize OpenAI client to get embeddings
+        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        
+        # Get embedding for the query text
+        embedding_response = client.embeddings.create(
+            model="text-embedding-ada-002",
+            input=query_text
         )
-        return results
-    except Exception as e:
-        return f"Milvus query error: {e}"
-
-def query_milvus_by_list_id(event_ids: list):
-    """
-    Query Milvus database by multiple event IDs as a list
-    
-    Args:
-        event_ids: List of event IDs to retrieve
+        query_vector = embedding_response.data[0].embedding
         
-    Returns:
-        Dictionary with event details or error message
-    """
-    try:
-        collection = initialize_milvus()
+        # Prepare search request for Milvus
+        search_data = {
+            "collectionName": MILVUS_COLLECTION_NAME,
+            "vector": query_vector,
+            "limit": 10,
+            "outputFields": ["event_name", "event_tags", "event_programe", "event_location", "event_description", "type"]
+        }
         
-        # Convert list to comma-separated string for Milvus query
-        ids_str = ",".join(str(id) for id in event_ids)
-        expr = f"event_id in [{ids_str}]"
+        headers = {
+            "Authorization": f"Bearer {MILVUS_TOKEN}",
+            "Content-Type": "application/json"
+        }
         
-        results = collection.query(
-            expr,
-            output_fields=["event_name", "event_tags", "event_programe", "event_location", "event_description"]
+        # Make request to Milvus
+        response = requests.post(
+            f"{MILVUS_ENDPOINT}/v1/vector/search",
+            headers=headers,
+            json=search_data
         )
-        return results
+        
+        if response.status_code == 200:
+            results = response.json()
+            return results.get("data", [])
+        else:
+            return f"Milvus search failed with status {response.status_code}"
+            
     except Exception as e:
-        return f"Milvus query error: {e}"
+        print(f"Error querying Milvus: {e}")
+        return f"Error searching for similar content: {str(e)}"
 
-def query_milvus_by_vector_similarity(query_text, top_k=5):
-    """
-    Query Milvus database using semantic similarity search
-    Used for when there is no event ID to search for (e.g., no time contraints)
-    
-    Args:
-        query_text: The text to search for
-        top_k: Number of top results to return
-        
-    Returns:
-        List of semantically similar events
-    """
-    try:
-        collection = initialize_milvus()
-        query_embedding = get_openai_embedding(query_text)
-        
-        if not query_embedding:
-            return "Failed to generate embedding for search"
-        
-        search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
-        results = collection.search(
-            data=[query_embedding],
-            anns_field="embedding",
-            param=search_params,
-            limit=top_k,
-            output_fields=["event_id", "event_name", "event_tags", "event_programe", "event_location", "event_description"]
-        )
-
-        # Format the results
-        formatted_results = []
-        for hits in results:
-            for hit in hits:
-                formatted_results.append({
-                    "id": hit.entity.get("event_id"),
-                    "name": hit.entity.get("event_name"),
-                    "tags": hit.entity.get("event_tags"),
-                    "program": hit.entity.get("event_programe"),
-                    "location": hit.entity.get("event_location"),
-                    "description": hit.entity.get("event_description"),
-                    "similarity": hit.distance
-                })
-        
-        return formatted_results
-    except Exception as e:
-        return f"Milvus search error: {e}"
-
-def generate_llm_response(milvus_result):
+def generate_llm_response(milvus_result, event_ids=None, user_message=""):
     """
     Generate a natural language response about events using OpenAI's API.
     
     Args:
         milvus_result: List of event details from Milvus query or error string
+        event_ids: List of event IDs from PostgreSQL query (optional)
+        user_message: The original user question for context
         
     Returns:
         String containing a natural language response about relevant events
@@ -409,146 +344,182 @@ def generate_llm_response(milvus_result):
         
         # Handle empty results
         if not milvus_result:
-            return "I couldn't find any events matching your criteria. Perhaps try a different date, time, or interests?"
+            return "I couldn't find any events or clubs matching your criteria. Perhaps try a different date, time, or interests? You can also ask about specific activities, academic programs, or social events at UCLA."
         
         # Initialize OpenAI client
         client = openai.OpenAI(api_key=OPENAI_API_KEY)
         
         # Format event information for the prompt
         events_text = ""
-        for event in milvus_result:
-            # Fix: Use the correct field names from your Milvus results
-            events_text += f"\nEvent: {event.get('event_name', 'Unnamed event')}\n"
-            events_text += f"Location: {event.get('event_location', 'Location TBD')}\n"
-            events_text += f"Program: {event.get('event_programe', 'N/A')}\n"
-            
-            # Handle tags properly - could be a string or a list
-            tags = event.get('event_tags', [])
-            if isinstance(tags, list):
-                events_text += f"Tags: {', '.join(tags) if tags else 'N/A'}\n"
-            else:
-                events_text += f"Tags: {tags if tags else 'N/A'}\n"
-            
-            events_text += f"Description: {event.get('event_description', 'No description available')}\n"
-    
+        events_count = 0
+        clubs_count = 0
         
-        # Create the prompt for GPT
-        prompt = f"""
-            Based on the following UCLA events, provide a concise and natural response highlighting the most relevant details. 
-            Focus on key information like event names, times, locations, and any special features. Keep the response friendly and informative.
+        for item in milvus_result:
+            item_type = item.get('type', 'event')
             
-            Events:{events_text}
-            
-            Response:
+            if item_type == 'club':
+                clubs_count += 1
+                events_text += f"""
+Club: {item.get('event_name', 'N/A')}
+Category: {item.get('event_tags', 'N/A')}
+Description: {item.get('event_description', 'N/A')}
+Email: {item.get('email', 'N/A')}
+Website: {item.get('website', 'N/A')}
+---
+"""
+            else:
+                events_count += 1
+                events_text += f"""
+Event: {item.get('event_name', 'N/A')}
+Tags: {item.get('event_tags', 'N/A')}
+Program: {item.get('event_programe', 'N/A')}
+Location: {item.get('event_location', 'N/A')}
+Description: {item.get('event_description', 'N/A')}
+---
+"""
+        
+        # Create context-aware system prompt
+        system_prompt = """You are a knowledgeable UCLA campus assistant who helps students discover events, clubs, and activities. 
+        Your goal is to provide helpful, personalized recommendations based on what the user is looking for.
+        
+        Guidelines:
+        - Analyze the user's question to understand what they're really asking for
+        - Provide a conversational, friendly response that directly addresses their needs
+        - Highlight the most relevant and interesting options first
+        - Include practical details like locations, contact info when helpful
+        - If showing multiple options, group them logically and explain why they might be good fits
+        - Make your response engaging and encourage further exploration
+        - Don't just list information - synthesize and recommend based on their interests"""
+
+        user_prompt = f"""
+        User Question: "{user_message}"
+        
+        Found {events_count} events and {clubs_count} clubs:
+        {events_text}
+        
+        Please provide a helpful, conversational response that addresses the user's specific question and highlights the most relevant recommendations.
         """
         
-        # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant that provides information about UCLA events."},
-                {"role": "user", "content": prompt}
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
             ],
-            max_tokens=300,
+            max_tokens=800,
             temperature=0.7
         )
         
-        # Extract and return the generated response
         return response.choices[0].message.content.strip()
         
     except Exception as e:
-        return f"Sorry, I couldn't process the events information at this time. Error: {str(e)}"
+        print(f"Error generating LLM response: {e}")
+        return f"I found some relevant events and clubs, but I'm having trouble formatting the response right now. Please try again in a moment."
 
-def get_openai_embedding(text: str):
-    """
-    Generate OpenAI embedding for the given text.
-    
-    Args:
-        text: The text to generate embedding for
-        
-    Returns:
-        List of floats representing the embedding vector
-    """
-    try:
-        client = openai.OpenAI(api_key=OPENAI_API_KEY)
-        response = client.embeddings.create(
-            model="text-embedding-ada-002",
-            input=text
+# Add missing API endpoints
+@app.post("/auth/register")
+async def register(user: UserIn):
+    """Register a new user"""
+    if user.username in fake_users_db:
+        raise HTTPException(
+            status_code=400,
+            detail="Username already registered"
         )
-        return response.data[0].embedding
-    except Exception as e:
-        print(f"Error generating OpenAI embedding: {e}")
-        return None
+    
+    hashed_password = get_password_hash(user.password)
+    fake_users_db[user.username] = {
+        "username": user.username,
+        "email": user.email,
+        "hashed_password": hashed_password,
+    }
+    
+    return {"message": "User registered successfully"}
 
+@app.post("/auth/login", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    """Login endpoint that returns JWT token"""
+    user = fake_users_db.get(form_data.username)
+    if not user or not verify_password(form_data.password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_jwt(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
-# Chat endpoint – temporarily bypasses authentication
 @app.post("/chat", response_model=ChatResponse)
-async def chat(chat_request: ChatRequest):
+async def chat_endpoint(request: ChatRequest):
+    """Main chat endpoint"""
     try:
-        # Pipeline: Parse -> Postgres (time filter) -> Milvus (Interest filter) -> LLM
-        print("\n=== Starting Chat Pipeline ===")
-        print(f"📨 Received message: {chat_request.message}")
-        print(f"🕐 Received time slots: {chat_request.timeSlots}")
+        # Extract parameters from natural language
+        params = extract_query_parameters(request.message)
         
-        # Convert Pydantic models to dictionaries for the query function
-        time_slots_dict = None
-        if chat_request.timeSlots:
-            time_slots_dict = [slot.dict() for slot in chat_request.timeSlots]
-            print(f"🔄 Converted time slots: {time_slots_dict}")
+        # Convert timeSlots to direct format if provided
+        direct_time_slots = None
+        if request.timeSlots:
+            direct_time_slots = request.timeSlots
         
-        print("\n1. Processing query parameters...")
-        # Use direct time slots if provided, otherwise parse the message
-        if time_slots_dict and len(time_slots_dict) > 0:
-            print("🎯 Using direct time slots from UI")
-            print(f"Time slots data: {time_slots_dict}")
-        else:
-            print("📝 Parsing message for query parameters")
-            query_params = extract_query_parameters(chat_request.message)
-            print(f"Extracted parameters: {query_params}")
+        # Query postgres for time-based filtering
+        event_ids = query_postgres(params, direct_time_slots)
         
-        print("\n2. Querying Postgres for date/time filtering...")
-        if time_slots_dict and len(time_slots_dict) > 0:
-            event_ids = query_postgres(direct_time_slots=time_slots_dict)
-        else:
-            event_ids = query_postgres(params=query_params if 'query_params' in locals() else None)
+        # Query milvus for semantic similarity
+        milvus_result = query_milvus_by_vector_similarity(request.message)
         
-        print(f"Postgres returned {len(event_ids)} event IDs: {event_ids}")
+        # Generate response
+        response = generate_llm_response(milvus_result, event_ids, request.message)
         
-        print("\n3. Querying Milvus...")
-        if event_ids and len(event_ids) > 0:
-            print(f"DEBUG: Calling query_milvus_by_list_id with event_ids: {event_ids}")
-            milvus_result = query_milvus_by_list_id(event_ids)
-        else:
-            print(f"DEBUG: No event IDs found, falling back to semantic search with message: '{chat_request.message}'")
-            milvus_result = query_milvus_by_vector_similarity(chat_request.message)
-        
-        print(f"DEBUG: Raw milvus_result type: {type(milvus_result).__name__}")
-        
-        if isinstance(milvus_result, str):
-            print(f"DEBUG: milvus_result is a STRING (likely an error from Milvus): {milvus_result}")
-        elif isinstance(milvus_result, list):
-            print(f"DEBUG: milvus_result is a LIST. Number of items: {len(milvus_result)}")
-            if milvus_result:
-                print(f"DEBUG: First item in milvus_result: {milvus_result[0]}")
-        else:
-            print(f"DEBUG: milvus_result is of unexpected type: {type(milvus_result)}")
-
-        print("\n4. Generating LLM Response...")
-        llm_response = generate_llm_response(milvus_result)
-        print(f"Final response: {llm_response}")
-        
-        print("\n=== Chat Pipeline Complete ===\n")
-        
-        return ChatResponse(response=llm_response)
+        return ChatResponse(response=response)
         
     except Exception as e:
-        print(f"❌ Error in chat endpoint: {e}")
-        print(f"❌ Error details: {str(e)}")
-        print("\n=== Chat Pipeline Failed ===\n")
-        return ChatResponse(response="Sorry, I encountered an error processing your request.")
+        print(f"Chat endpoint error: {e}")
+        return ChatResponse(response="I'm sorry, I encountered an error processing your request. Please try again.")
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+@app.get("/")
+async def root():
+    """Root endpoint with API information"""
+    return {
+        "message": "Welcome to the UCLA-Xplore API!",
+        "status": "running",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "chat": "/chat",
+            "register": "/auth/register",
+            "login": "/auth/login"
+        }
+    }
+
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Add startup event
+@app.on_event("startup")
+async def startup_event():
+    logger.info("🚀 FastAPI application is starting up...")
+    logger.info(f"Environment variables loaded: {bool(os.getenv('OPENAI_API_KEY'))}")
+    logger.info(f"Database configured: {bool(os.getenv('DB_HOST'))}")
+    logger.info(f"Milvus configured: {bool(os.getenv('MILVUS_ENDPOINT'))}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("🔄 FastAPI application is shutting down...")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # Railway sets the PORT environment variable
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
