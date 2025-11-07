@@ -2,6 +2,9 @@
 
 A chatbot that answers questions about on-campus events and extracurricular activities, with an additional graphic time availability selector.
 
+![Alt text](/Screenshot%202025-06-02%20at%2011.49.12%20PM.png?raw=true)
+
+![Alt text](/Screenshot%202025-06-02%20at%2011.48.02%20PM.png?raw=true)
 
 ## Project Structure
 
