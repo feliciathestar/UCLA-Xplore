@@ -1,6 +1,7 @@
 # UCLA-Xplore
 
-A chatbot that answers questions regarding on-campus events, extracurricular activities, and ticketing information.
+A chatbot that answers questions about on-campus events and extracurricular activities, with an additional graphic time availability selector.
+
 
 ## Project Structure
 
